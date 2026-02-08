@@ -209,7 +209,7 @@ export default function ProductsAdminPage() {
         <Stack direction="row" spacing={1} alignItems="center">
           <Box>
             <TextField size="small" placeholder="Search products in this table" value={q} onChange={e => setQ(e.target.value)} />
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>This search filters the products table only.</Typography>
+            {/* <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>This search filters the products table only.</Typography> */}
           </Box>
           <Button variant="outlined" onClick={() => setBulkOpen(true)}>Bulk Upload</Button>
           <Button variant="contained" onClick={openCreate}>New Product</Button>

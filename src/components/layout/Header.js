@@ -37,6 +37,8 @@ import { fetchSearchSuggestions, saveRecentSearch } from 'services/searchApi';
 import { useAuth } from 'state/AuthContext';
 import NotificationCenter from 'components/notifications/NotificationCenter';
 
+const SCROLL_THRESHOLD = 40;
+
 function Header() {
   const { items } = useCart();
   const { items: wish } = useWishlist();
@@ -47,6 +49,14 @@ function Header() {
   const [menuEl, setMenuEl] = React.useState(null);
   const [catEl, setCatEl] = React.useState(null);
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [scrolled, setScrolled] = React.useState(false);
+
+  React.useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > SCROLL_THRESHOLD);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const [q, setQ] = React.useState('');
   const [options, setOptions] = React.useState([]);
@@ -71,8 +81,12 @@ function Header() {
 
   return (
     <AppBar position="sticky" color="inherit" elevation={0} sx={{
-      borderBottom: '1px solid', borderColor: 'divider',
-      backdropFilter: 'saturate(180%) blur(8px)',
+      borderBottom: '1px solid',
+      borderColor: 'divider',
+      backdropFilter: scrolled ? 'saturate(200%) blur(20px)' : 'saturate(180%) blur(12px)',
+      WebkitBackdropFilter: scrolled ? 'saturate(200%) blur(20px)' : 'saturate(180%) blur(12px)',
+      backgroundColor: scrolled ? (t) => alpha(t.palette.background.paper, 0.88) : (t) => alpha(t.palette.background.paper, 0.72),
+      transition: 'backdrop-filter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), background-color 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
     }}>
       <Toolbar sx={{ gap: 2, py: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -91,12 +105,28 @@ function Header() {
             aria-haspopup="true"
             aria-controls={catEl ? 'categories-menu' : undefined}
             aria-expanded={Boolean(catEl) ? 'true' : undefined}
+            className="nav-link-underline"
             sx={{
               textTransform: 'none',
               borderRadius: 2,
               px: 1.5,
-              '&:hover': { bgcolor: (t) => alpha(t.palette.text.primary, 0.06), transform: 'translateY(-1px)' },
-              transition: 'all 150ms ease',
+              position: 'relative',
+              transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                bottom: 4,
+                left: '50%',
+                width: 0,
+                height: 2,
+                bgcolor: 'primary.main',
+                transition: 'width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                transform: 'translateX(-50%)',
+              },
+              '&:hover': {
+                bgcolor: (t) => alpha(t.palette.text.primary, 0.06),
+                '&::after': { width: 'calc(100% - 12px)', left: '50%' },
+              },
             }}
           >
             Shop
@@ -115,8 +145,23 @@ function Header() {
               textTransform: 'none',
               borderRadius: 2,
               px: 1.5,
-              '&:hover': { bgcolor: (t) => alpha(t.palette.text.primary, 0.06), transform: 'translateY(-1px)' },
-              transition: 'all 150ms ease',
+              position: 'relative',
+              transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                bottom: 4,
+                left: '50%',
+                width: 0,
+                height: 2,
+                bgcolor: 'primary.main',
+                transition: 'width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                transform: 'translateX(-50%)',
+              },
+              '&:hover': {
+                bgcolor: (t) => alpha(t.palette.text.primary, 0.06),
+                '&::after': { width: 'calc(100% - 12px)', left: '50%' },
+              },
             }}
           >
             Track Order

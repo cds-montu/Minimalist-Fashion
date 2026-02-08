@@ -84,7 +84,7 @@ export default function LoginPage() {
       <Box sx={{ textAlign: 'center', mb: 4 }}>
         <BrandLogo size={48} withWordmark sx={{ mb: 2 }} />
         <Typography variant="h4" component="h1" gutterBottom>
-          Welcome back
+          Welcome
         </Typography>
         <Typography color="text.secondary">
           Sign in to your account to continue

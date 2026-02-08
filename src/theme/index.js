@@ -10,7 +10,7 @@ export function useColorMode() {
 
 export function AppThemeProvider({ children }) {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [mode, setMode] = React.useState(() => localStorage.getItem('color-mode') || (prefersDarkMode ? 'dark' : 'light'));
+  const [mode, setMode] = React.useState(() => localStorage.getItem('color-mode') || 'dark');
 
   const colorMode = React.useMemo(
     () => ({
@@ -31,22 +31,22 @@ export function AppThemeProvider({ children }) {
       let t = createTheme({
         palette: {
           mode,
-          // Modern, accessible palette inspired by premium retail aesthetics
+          // Dark luxury: deep charcoal, warm accents
           primary: mode === 'light'
-            ? { main: '#4F46E5', light: '#818CF8', dark: '#3730A3', contrastText: '#FFFFFF' } // Indigo 600
-            : { main: '#A5B4FC', light: '#C7D2FE', dark: '#818CF8', contrastText: '#0B1220' }, // Indigo 200-300
+            ? { main: '#4F46E5', light: '#818CF8', dark: '#3730A3', contrastText: '#FFFFFF' }
+            : { main: '#C9A962', light: '#E5D4A1', dark: '#A68B4B', contrastText: '#0D0D0D' },
           secondary: mode === 'light'
-            ? { main: '#10B981', light: '#34D399', dark: '#047857', contrastText: '#0B1220' } // Emerald 500
-            : { main: '#6EE7B7', light: '#A7F3D0', dark: '#34D399', contrastText: '#0B1220' }, // Emerald 300-400
+            ? { main: '#10B981', light: '#34D399', dark: '#047857', contrastText: '#0B1220' }
+            : { main: '#8B7355', light: '#B0987A', dark: '#6B5344', contrastText: '#F5F0E8' },
           background: {
-            default: mode === 'light' ? '#F8FAFC' : '#0B1220',
-            paper: mode === 'light' ? '#FFFFFF' : '#111827',
+            default: mode === 'light' ? '#F8FAFC' : '#0D0D0D',
+            paper: mode === 'light' ? '#FFFFFF' : '#161616',
           },
           text: {
-            primary: mode === 'light' ? '#0F172A' : '#E5E7EB',
-            secondary: mode === 'light' ? '#475569' : '#9CA3AF',
+            primary: mode === 'light' ? '#0F172A' : '#F5F0E8',
+            secondary: mode === 'light' ? '#475569' : '#A8A29E',
           },
-          divider: mode === 'light' ? 'rgba(2,6,23,0.08)' : 'rgba(255,255,255,0.12)',
+          divider: mode === 'light' ? 'rgba(2,6,23,0.08)' : 'rgba(255,255,255,0.08)',
           success: { main: '#10B981' },
           error: { main: '#EF4444' },
           warning: { main: '#F59E0B' },
@@ -78,17 +78,37 @@ export function AppThemeProvider({ children }) {
         },
         shadows: [
           'none',
-          '0px 1px 2px rgba(16,24,40,0.06), 0px 1px 3px rgba(16,24,40,0.10)',
-          '0px 2px 4px rgba(16,24,40,0.06), 0px 2px 6px rgba(16,24,40,0.10)',
-          ...Array(22).fill('0 6px 16px rgba(0,0,0,0.08)'),
+          mode === 'dark' ? '0 1px 3px rgba(0,0,0,0.4)' : '0px 1px 2px rgba(16,24,40,0.06), 0px 1px 3px rgba(16,24,40,0.10)',
+          mode === 'dark' ? '0 4px 12px rgba(0,0,0,0.5)' : '0px 2px 4px rgba(16,24,40,0.06), 0px 2px 6px rgba(16,24,40,0.10)',
+          ...Array(20).fill(mode === 'dark' ? '0 8px 24px rgba(0,0,0,0.5)' : '0 6px 16px rgba(0,0,0,0.08)'),
         ],
         components: {
           MuiButton: {
             defaultProps: { disableElevation: true },
             styleOverrides: {
-              root: { borderRadius: 10, paddingInline: 16 },
+              root: {
+                borderRadius: 10,
+                paddingInline: 16,
+                transition: 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), background-color 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-1px)',
+                  boxShadow: (t) => t.shadows[2],
+                },
+              },
               sizeSmall: { paddingInline: 12, height: 34 },
               containedPrimary: { boxShadow: '0 8px 20px rgba(29,53,87,0.2)' },
+              outlined: {
+                '&:hover': {
+                  transform: 'translateY(-1px)',
+                  borderWidth: 1.5,
+                },
+              },
+              text: {
+                '&:hover': {
+                  transform: 'translateY(-1px)',
+                  backgroundColor: (t) => t.palette.action.hover,
+                },
+              },
             },
             variants: [
               { props: { variant: 'soft' }, style: { background: 'rgba(29,53,87,0.08)', color: '#1D3557' } },
@@ -112,7 +132,7 @@ export function AppThemeProvider({ children }) {
             styleOverrides: {
               root: {
                 borderRadius: 16,
-                border: '1px solid rgba(2,6,23,0.06)'
+                border: (t) => `1px solid ${t.palette.divider}`,
               },
             },
           },
@@ -191,7 +211,7 @@ export function AppThemeProvider({ children }) {
         <GlobalStyles
           styles={{
             '::selection': {
-              background: theme.palette.mode === 'light' ? 'rgba(29,53,87,0.16)' : 'rgba(168,218,220,0.24)',
+              background: theme.palette.mode === 'light' ? 'rgba(29,53,87,0.16)' : 'rgba(201,169,98,0.25)',
             },
             a: { color: theme.palette.primary.main },
             img: { display: 'block', maxWidth: '100%' },
@@ -200,7 +220,7 @@ export function AppThemeProvider({ children }) {
               outlineOffset: 2,
             },
             '.MuiButton-root, .MuiIconButton-root, .MuiCard-root, .MuiPaper-root': {
-              transition: 'all .2s ease',
+              transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
             },
           }}
         />

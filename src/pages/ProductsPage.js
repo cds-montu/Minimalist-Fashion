@@ -6,11 +6,13 @@ import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
 import Skeleton from '@mui/material/Skeleton';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Pagination from '@mui/material/Pagination';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import IconButton from '@mui/material/IconButton';
 import TuneIcon from '@mui/icons-material/Tune';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -30,9 +32,12 @@ import RecommendationsRail from 'components/recommendations/RecommendationsRail'
 import { trackEvent, trackProductImpressions } from 'services/recommendations';
 import Chip from '@mui/material/Chip';
 import { useAuth } from 'state/AuthContext';
+import { useWishlist } from 'state/WishlistContext';
 import { isMember } from 'services/memberships';
+import ScrollReveal from 'components/layout/ScrollReveal';
 
 function ProductCard({ product, onAdd, onQuick, locked }) {
+  const { toggle: toggleWishlist, contains: isInWishlist } = useWishlist();
   return (
     <Card
       sx={{
@@ -42,19 +47,27 @@ function ProductCard({ product, onAdd, onQuick, locked }) {
         position: 'relative',
         overflow: 'hidden',
         transform: 'translateY(0)',
-        transition: 'transform .2s ease, box-shadow .2s ease',
-        '&:hover': { transform: 'translateY(-3px)', boxShadow: 6 },
+        transition: 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 },
         '&:hover .overlay': { opacity: 1, transform: 'translateY(0)' },
+        '&:hover .product-img': { transform: 'scale(1.05)' },
       }}
     >
-      <Box sx={{ position: 'relative' }}>
+      <Box sx={{ position: 'relative', overflow: 'hidden' }}>
         <CardMedia
+          className="product-img"
           component="img"
           src={getProductImage(product, { w: 600, h: 600 })}
           alt={product.title}
           loading="lazy"
           onError={(e) => onImgErrorSwap(e, product, { w: 600, h: 600 })}
-          sx={{ aspectRatio: '1 / 1', bgcolor: 'action.hover', objectFit: 'cover', width: '100%' }}
+          sx={{
+            aspectRatio: '1 / 1',
+            bgcolor: 'action.hover',
+            objectFit: 'cover',
+            width: '100%',
+            transition: 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          }}
         />
         {(product.exclusive || product.earlyAccess || (Array.isArray(product.tags) && (product.tags.includes('exclusive') || product.tags.includes('earlyAccess')))) && (
           <Chip
@@ -68,12 +81,19 @@ function ProductCard({ product, onAdd, onQuick, locked }) {
           className="overlay"
           sx={{
             position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 1,
-            p: 2, background: 'linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.5) 100%)',
-            opacity: 0, transform: 'translateY(10px)', transition: 'all .25s ease',
+            p: 2, background: 'linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.6) 100%)',
+            opacity: 0, transform: 'translateY(12px)', transition: 'all 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
           }}
         >
-          <Button size="small" variant="contained" onClick={() => onAdd(product)} sx={{ flex: 1 }} disabled={locked}>{locked ? 'Members Only' : 'Quick Add'}</Button>
+          <Button size="small" variant="contained" onClick={() => onAdd(product)} sx={{ flex: 1 }} disabled={locked}>{locked ? 'Members Only' : 'Add to Cart'}</Button>
           <Button size="small" variant="outlined" color="secondary" onClick={() => onQuick(product)} sx={{ flex: 1 }}>Quick View</Button>
+          <IconButton
+            size="small"
+            sx={{ bgcolor: 'background.paper', color: isInWishlist(product.id) ? 'error.main' : 'inherit' }}
+            onClick={(e) => { e.stopPropagation(); toggleWishlist(product); }}
+          >
+            {isInWishlist(product.id) ? <FavoriteIcon fontSize="small" /> : <FavoriteBorderIcon fontSize="small" />}
+          </IconButton>
         </Box>
       </Box>
       <CardContent sx={{ flexGrow: 1 }}>
@@ -254,12 +274,14 @@ function ProductsPage() {
                 </Box>
               </Card>
             ) : (
-              <ProductCard 
-                product={p}
-                locked={((p.exclusive || (p.tags||[]).includes('exclusive')) || (p.earlyAccess || (p.tags||[]).includes('earlyAccess'))) && !isMember(user)}
-                onAdd={(prod) => { addItem(prod, 1); trackEvent({ type: 'add_to_cart', productId: prod.id, category: prod.category }); }} 
-                onQuick={(prod) => { setQuick(prod); trackEvent({ type: 'quick_view', productId: prod.id, category: prod.category }); }} 
-              />
+              <ScrollReveal delay={(idx % 4) * 0.08}>
+                <ProductCard 
+                  product={p}
+                  locked={((p.exclusive || (p.tags||[]).includes('exclusive')) || (p.earlyAccess || (p.tags||[]).includes('earlyAccess'))) && !isMember(user)}
+                  onAdd={(prod) => { addItem(prod, 1); trackEvent({ type: 'add_to_cart', productId: prod.id, category: prod.category }); }} 
+                  onQuick={(prod) => { setQuick(prod); trackEvent({ type: 'quick_view', productId: prod.id, category: prod.category }); }} 
+                />
+              </ScrollReveal>
             )}
           </Grid>
         ))}

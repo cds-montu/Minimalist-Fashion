@@ -68,12 +68,22 @@ function pickKeywords(product = {}) {
 }
 
 export function getProductImage(product, { w = 600, h = 600, index = 0 } = {}) {
-  // Prefer uploaded image if present, otherwise fall back to description-based mapping
+  // Prefer uploaded images if present (indexed), then primary image, then fallbacks
+  if (product && Array.isArray(product.images) && product.images.length) {
+    const img = product.images[index] ?? product.images[0];
+    if (img) return img;
+  }
+  if (product && product.image) return product.image;
   const candidates = getProductImageCandidates(product, { w, h, index });
   return candidates[0];
 }
 
 export function getGalleryImages(product, count = 5, { w = 800, h = 600 } = {}) {
+  // If product has uploaded images array, use it directly (up to max count)
+  if (product && Array.isArray(product.images) && product.images.length) {
+    return product.images.slice(0, count);
+  }
+  // Else synthesize a gallery from seeded fallbacks
   return Array.from({ length: count }).map((_, i) => getProductImage(product, { w, h, index: i }));
 }
 
@@ -94,8 +104,16 @@ export function getProductImageCandidates(product, { w = 600, h = 600, index = 0
     // Fallback 3: plain placeholder
     `https://placehold.co/${w}x${h}?text=Image`,
   ];
-  if (product && product.image) {
-    candidates.unshift(product.image);
+  // Prepend uploaded specific index image if available, then primary image
+  if (product) {
+    if (Array.isArray(product.images) && product.images.length) {
+      const indexed = product.images[index];
+      const primary = product.image || product.images[0];
+      if (indexed) candidates.unshift(indexed);
+      if (primary && primary !== indexed) candidates.unshift(primary);
+    } else if (product.image) {
+      candidates.unshift(product.image);
+    }
   }
   return candidates;
 }

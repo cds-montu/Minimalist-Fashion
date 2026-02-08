@@ -8,7 +8,7 @@ import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
 import { Link as RouterLink } from 'react-router-dom';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { MeshReflectorMaterial, Environment } from '@react-three/drei';
+import { MeshReflectorMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 import BrandLogo from 'components/BrandLogo';
 
@@ -77,7 +77,6 @@ function Footer() {
             <Canvas dpr={[1, 2]} camera={{ position: [0, 8, 14], fov: 35 }} style={{ position: 'absolute', inset: 0 }}>
               <ambientLight intensity={0.5} />
               <directionalLight position={[4, 10, 2]} intensity={0.5} />
-              <Environment preset="city" background={false} />
               <group position={[0, -3, 0]}>
                 <WaterSurface />
               </group>

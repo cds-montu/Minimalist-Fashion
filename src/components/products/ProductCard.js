@@ -80,13 +80,16 @@ const ProductCard = ({ product, onAddToCart, onAddToWishlist, onQuickView }) => 
         borderRadius: 2,
         overflow: 'visible',
         border: `1px solid ${theme.palette.divider}`,
-        transition: 'transform 0.2s, box-shadow 0.2s',
+        transition: 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         '&:hover': {
           transform: 'translateY(-4px)',
           boxShadow: theme.shadows[4],
           '& .product-actions': {
             opacity: 1,
             transform: 'translateY(0)',
+          },
+          '& .product-img': {
+            transform: 'scale(1.05)',
           },
         },
       }}
@@ -114,6 +117,7 @@ const ProductCard = ({ product, onAddToCart, onAddToWishlist, onQuickView }) => 
           }}
         >
           <CardMedia
+            className="product-img"
             component="img"
             image={product.image || '/placeholder-product.jpg'}
             alt={product.name}
@@ -124,10 +128,7 @@ const ProductCard = ({ product, onAddToCart, onAddToWishlist, onQuickView }) => 
               width: '100%',
               height: '100%',
               objectFit: 'contain',
-              transition: 'transform 0.3s ease-in-out',
-              '&:hover': {
-                transform: 'scale(1.05)',
-              },
+              transition: 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
             }}
           />
 
@@ -185,7 +186,7 @@ const ProductCard = ({ product, onAddToCart, onAddToWishlist, onQuickView }) => 
               bgcolor: 'rgba(255, 255, 255, 0.9)',
               transform: 'translateY(100%)',
               opacity: 0,
-              transition: 'all 0.3s ease',
+              transition: 'all 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
             }}
           >
             <Tooltip title="Quick View">
