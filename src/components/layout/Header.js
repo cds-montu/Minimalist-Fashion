@@ -83,8 +83,8 @@ function Header() {
     <AppBar position="sticky" color="inherit" elevation={0} sx={{
       borderBottom: '1px solid',
       borderColor: 'divider',
-      backdropFilter: scrolled ? 'saturate(200%) blur(20px)' : 'saturate(180%) blur(12px)',
-      WebkitBackdropFilter: scrolled ? 'saturate(200%) blur(20px)' : 'saturate(180%) blur(12px)',
+      backdropFilter: scrolled ? 'blur(8px)' : 'none',
+      WebkitBackdropFilter: scrolled ? 'blur(8px)' : 'none',
       backgroundColor: scrolled ? (t) => alpha(t.palette.background.paper, 0.88) : (t) => alpha(t.palette.background.paper, 0.72),
       transition: 'backdrop-filter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), background-color 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
     }}>

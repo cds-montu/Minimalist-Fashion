@@ -1,35 +1,174 @@
-const categories = ['Electronics', 'Fashion', 'Home', 'Sports', 'Beauty'];
-const brands = ['Levis', 'Ralph Lauren', 'U S Polo', 'Luis Vuitton', 'Dior','Rolex'];
-const colors = ['Red', 'Blue', 'Black', 'White', 'Green'];
-const sizes = ['XS', 'S', 'M', 'L', 'XL'];
+// Curated product catalog for realistic fashion imagery
+// NOTE: Add high-quality images to `public/assests/products/` matching the `image` paths below.
 
-const products = Array.from({ length: 60 }).map((_, i) => {
-  const category = categories[i % categories.length];
-  const brand = brands[(i + 1) % brands.length];
-  const color = colors[(i + 2) % colors.length];
-  const size = sizes[(i + 3) % sizes.length];
-  const tags = [];
-  if (i % 4 === 0) tags.push('new');
-  return {
-    id: i + 1,
-    title: `${brand} ${category} Item ${i + 1}`,
-    price: Math.round((Math.random() * 90 + 10) * 100) / 100,
-    rating: Math.round((Math.random() * 4 + 1) * 2) / 2,
-    description: 'This is a great product with awesome features that customers love.',
-    category,
-    brand,
-    color,
-    size,
-    tags,
-    createdAt: Date.now() - i * 86400000,
-  };
-});
+const products = [
+  {
+    id: 1,
+    title: 'Essential Cotton Oversized T-Shirt',
+    brand: 'Minimal Atelier',
+    category: 'Fashion',
+    price: 45.0,
+    rating: 4.5,
+    color: 'Off White',
+    size: 'S,M,L,XL',
+    fabric: 'Cotton Jersey',
+    fit: 'Oversized',
+    description: 'Premium cotton oversized tee with soft handfeel and clean seams. Studio shot on neutral background.',
+    tags: ['top', 'new'],
+    image: '/assests/products/oversized-tee-offwhite-1.jpg',
+    images: ['/assests/products/oversized-tee-offwhite-1.jpg','/assests/products/oversized-tee-offwhite-2.jpg']
+  },
+  {
+    id: 2,
+    title: 'Slim Indigo Denim Jeans',
+    brand: 'Minimal Atelier',
+    category: 'Fashion',
+    price: 98.0,
+    rating: 4.7,
+    color: 'Indigo',
+    size: '28,30,32,34,36',
+    fabric: 'Denim',
+    fit: 'Slim',
+    description: 'Clean-cut slim denim with medium-weight cotton for structure. Front-facing studio image with accurate color.',
+    tags: ['bottom'],
+    image: '/assests/products/slim-jeans-indigo-1.jpg',
+    images: ['/assests/products/slim-jeans-indigo-1.jpg','/assests/products/slim-jeans-indigo-2.jpg']
+  },
+  {
+    id: 3,
+    title: 'Linen Button-Up Shirt',
+    brand: 'Coastal & Co',
+    category: 'Fashion',
+    price: 85.0,
+    rating: 4.4,
+    color: 'Sand',
+    size: 'S,M,L,XL',
+    fabric: 'Linen',
+    fit: 'Regular',
+    description: 'Breathable linen shirt with natural texture, photographed on model in urban setting for lifestyle context.',
+    tags: ['shirt', 'new'],
+    image: '/assests/products/linen-shirt-sand-1.jpg',
+    images: ['/assests/products/linen-shirt-sand-1.jpg','/assests/products/linen-shirt-sand-2.jpg']
+  },
+  {
+    id: 4,
+    title: 'Classic French Terry Hoodie',
+    brand: 'Minimal Atelier',
+    category: 'Fashion',
+    price: 120.0,
+    rating: 4.6,
+    color: 'Charcoal',
+    size: 'S,M,L,XL',
+    fabric: 'Cotton Fleece',
+    fit: 'Regular',
+    description: 'Mid-weight hoodie with clean silhouette, shot on neutral background and worn in lifestyle imagery.',
+    tags: ['hoodie'],
+    image: '/assests/products/hoodie-charcoal-1.jpg',
+    images: ['/assests/products/hoodie-charcoal-1.jpg','/assests/products/hoodie-charcoal-2.jpg']
+  },
+  {
+    id: 5,
+    title: 'Tailored Wool Overcoat',
+    brand: 'Atelier Tailor',
+    category: 'Fashion',
+    price: 350.0,
+    rating: 4.8,
+    color: 'Camel',
+    size: 'S,M,L,XL',
+    fabric: 'Wool Blend',
+    fit: 'Tailored',
+    description: 'Longline wool overcoat with structured shoulders, studio-shot on mannequin and model lifestyle shots.',
+    tags: ['outerwear'],
+    image: '/assests/products/wool-overcoat-camel-1.jpg',
+    images: ['/assests/products/wool-overcoat-camel-1.jpg','/assests/products/wool-overcoat-camel-2.jpg']
+  },
+  {
+    id: 6,
+    title: 'Relaxed Cotton Chinos',
+    brand: 'Coastal & Co',
+    category: 'Fashion',
+    price: 79.0,
+    rating: 4.3,
+    color: 'Khaki',
+    size: '30,32,34,36',
+    fabric: 'Cotton Twill',
+    fit: 'Relaxed',
+    description: 'Comfortable chinos with soft drape, photographed front-facing for clarity.',
+    tags: ['bottom'],
+    image: '/assests/products/chinos-khaki-1.jpg',
+    images: ['/assests/products/chinos-khaki-1.jpg','/assests/products/chinos-khaki-2.jpg']
+  },
+  {
+    id: 7,
+    title: 'Ribbed Merino Knit Sweater',
+    brand: 'Atelier Knit',
+    category: 'Fashion',
+    price: 140.0,
+    rating: 4.7,
+    color: 'Beige',
+    size: 'S,M,L,XL',
+    fabric: 'Merino Wool',
+    fit: 'Regular',
+    description: 'Fine-gauge merino knit with ribbed texture, photographed in studio with soft light to show fabric detail.',
+    tags: ['knit'],
+    image: '/assests/products/merino-sweater-beige-1.jpg',
+    images: ['/assests/products/merino-sweater-beige-1.jpg','/assests/products/merino-sweater-beige-2.jpg']
+  },
+  {
+    id: 8,
+    title: 'Boxy Denim Jacket',
+    brand: 'Minimal Atelier',
+    category: 'Fashion',
+    price: 150.0,
+    rating: 4.5,
+    color: 'Light Blue',
+    size: 'S,M,L,XL',
+    fabric: 'Denim',
+    fit: 'Boxy',
+    description: 'Cropped boxy denim jacket with contrast stitching. Studio and model images included.',
+    tags: ['jacket'],
+    image: '/assests/products/denim-jacket-lightblue-1.jpg',
+    images: ['/assests/products/denim-jacket-lightblue-1.jpg','/assests/products/denim-jacket-lightblue-2.jpg']
+  },
+  {
+    id: 9,
+    title: 'Silk-Cotton Blend Blouse',
+    brand: 'Maison Neat',
+    category: 'Fashion',
+    price: 130.0,
+    rating: 4.6,
+    color: 'Ivory',
+    size: 'XS,S,M,L',
+    fabric: 'Silk Cotton',
+    fit: 'Relaxed',
+    description: 'Lightweight blouse with subtle sheen, photographed on model in minimalist environment.',
+    tags: ['blouse'],
+    image: '/assests/products/silk-blouse-ivory-1.jpg',
+    images: ['/assests/products/silk-blouse-ivory-1.jpg','/assests/products/silk-blouse-ivory-2.jpg']
+  },
+  {
+    id: 10,
+    title: 'Technical Rain Jacket',
+    brand: 'Urban Shield',
+    category: 'Fashion',
+    price: 220.0,
+    rating: 4.4,
+    color: 'Black',
+    size: 'S,M,L,XL',
+    fabric: 'Waterproof Shell',
+    fit: 'Regular',
+    description: 'Seam-sealed technical jacket with matte finish; front-facing studio shots highlight details.',
+    tags: ['outerwear'],
+    image: '/assests/products/rain-jacket-black-1.jpg',
+    images: ['/assests/products/rain-jacket-black-1.jpg','/assests/products/rain-jacket-black-2.jpg']
+  }
+];
 
 export const facets = {
-  categories,
-  brands,
-  colors,
-  sizes,
+  categories: ['Fashion'],
+  brands: Array.from(new Set(products.map((p) => p.brand))).slice(0, 8),
+  colors: Array.from(new Set(products.map((p) => p.color))).slice(0, 8),
+  sizes: Array.from(new Set(products.flatMap((p) => (typeof p.size === 'string' ? p.size.split(',') : [p.size])))).slice(0, 8),
 };
 
 export default products;

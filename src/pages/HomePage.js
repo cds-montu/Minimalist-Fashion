@@ -16,7 +16,8 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { getAllProducts } from 'services/productsStore';
-import herobanner from "../assests/images/herobanner.jpg";
+// import herobanner from "../assests/images/herobanner.jpg";
+import heroBannerVideo from "../assests/videos/hero-banner.mp4";
 import collection from "../assests/images/collection.jpg";
 import Lifestyle from "../assests/images/Lifestyle Section.jpg";
 import { getProductImage, onImgErrorSwap } from 'core/utils/imageForProduct';
@@ -27,7 +28,6 @@ import { useCart } from 'state/CartContext';
 import { useWishlist } from 'state/WishlistContext';
 
 const STORAGE_KEY = 'home:config';
-const DEFAULT_HERO_VIDEO = 'https://cdn.mixkit.co/videos/preview/mixkit-fabric-textile-soft-flow-40626-large.mp4';
 
 function loadConfig() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
@@ -162,23 +162,27 @@ function HomePage() {
 
   return (
     <Box sx={{ bgcolor: 'background.default' }}>
-      {/* Hero Section */}
+      {/* Hero Section - Full Viewport Background Video (Edge-to-Edge) */}
       <Box
         sx={{
           position: 'relative',
-          height: { xs: 520, md: 640 },
+          width: '100vw',
+          height: '100svh',
+          overflow: 'hidden',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: 'common.white',
-          overflow: 'hidden',
-          borderBottom: `1px solid ${theme.palette.divider}`,
+          marginLeft: 'calc(50% - 50vw)',
+          marginRight: 'calc(50% - 50vw)',
+          zIndex: 0,
         }}
       >
+
         {heroVideoFailed ? (
           <Box
             component="img"
-            src={cfg.heroImage || herobanner}
+            src={cfg.heroImage}
             alt="Hero"
             sx={{
               position: 'absolute',
@@ -186,57 +190,68 @@ function HomePage() {
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              filter: 'grayscale(8%)',
-              transform: 'scale(1.02)',
+              display: 'block',
+              filter: 'brightness(0.75)',
+              pointerEvents: 'none',
             }}
           />
         ) : (
-          <Box
-            component="video"
+          <video
             autoPlay
-            loop
             muted
+            loop
             playsInline
-            poster={cfg.heroImage || herobanner}
+            preload="auto"
+            controls={false}
+            poster={cfg.heroImage}
             onError={() => setHeroVideoFailed(true)}
-            sx={{
+            style={{
+              filter: 'brightness(0.75)',
               position: 'absolute',
               inset: 0,
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              filter: 'grayscale(8%)',
-              transform: 'scale(1.02)',
+              display: 'block',
+              pointerEvents: 'none',
             }}
           >
-            <source src={cfg.heroVideo || DEFAULT_HERO_VIDEO} type="video/mp4" />
-          </Box>
+            <source src={heroBannerVideo} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         )}
+
+        {/* Cinematic Overlay - Dark Gradient + Vignette */}
         <Box
           sx={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.55) 100%)',
+            background: `
+              radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.25) 100%),
+              linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.5) 100%)
+            `,
             pointerEvents: 'none',
           }}
         />
-        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-          {/* Centered overlay slightly below mid to align under collection text */}
-          <Box
+
+        {/* Hero Content */}
+        <Box
             sx={{
               position: 'absolute',
               left: '50%',
-              top: { xs: '56%', md: '62%' },
+              top: '50%',
               transform: 'translate(-50%, -50%)',
               textAlign: 'center',
               width: '100%',
-              px: 2,
+              maxWidth: '900px',
+              px: { xs: 3, sm: 4, md: 5 },
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 1,
-              pointerEvents: 'none',
+              gap: 3,
+              pointerEvents: 'auto',
+              zIndex: 10,
             }}
           >
             {(cfg.banner?.showHeading ?? true) && (() => {
@@ -252,7 +267,7 @@ function HomePage() {
                     justifyContent: 'center',
                     alignItems: 'center',
                     gap: isMultiLine ? 0 : '0 0.35em',
-                    mb: 5,
+                    mb: 3,
                   }}
                 >
                   {items.map((item, i) => (
@@ -260,14 +275,18 @@ function HomePage() {
                       key={i}
                       initial={{ opacity: 0, y: 24 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.9, delay: 0.15 * i, ease: [0.25, 0.46, 0.45, 0.94] }}
+                      transition={{ duration: 1.1, delay: 0.2 * i, ease: [0.16, 1, 0.3, 1] }}
                     >
                       <Typography
                         variant="h1"
                         sx={{
                           color: 'common.white',
-                          textShadow: '0 2px 6px rgba(0,0,0,0.35)',
-                          letterSpacing: { xs: 0, md: 0.5 },
+                          fontFamily: "'Playfair Display', 'Garamond', 'Didot', serif",
+                          fontWeight: 300,
+                          fontSize: { xs: '2.8rem', sm: '3.8rem', md: '5rem' },
+                          letterSpacing: { xs: '0.02em', md: '0.04em' },
+                          lineHeight: 1.1,
+                          textShadow: '0 4px 12px rgba(0,0,0,0.4)',
                         }}
                       >
                         {item}
@@ -280,20 +299,33 @@ function HomePage() {
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+              transition={{ duration: 0.9, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
               style={{ pointerEvents: 'auto' }}
             >
               <Button
                 component={Link}
                 to="/products"
-                variant="contained"
+                variant="outlined"
                 size="large"
                 sx={{
                   borderRadius: 999,
+                  fontWeight: 400,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  fontSize: '0.85rem',
+                  py: 1.8,
+                  px: 4,
+                  color: '#d4af8a',
+                  borderColor: '#d4af8a',
+                  backgroundColor: 'rgba(255,255,255,0.08)',
+                  backdropFilter: 'blur(6px)',
+                  minWidth: '160px',
                   transition: 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                   '&:hover': {
-                    transform: 'translateY(-2px) scale(1.03)',
-                    boxShadow: (t) => `0 16px 40px ${t.palette.mode === 'dark' ? 'rgba(201,169,98,0.35)' : 'rgba(79,70,229,0.3)'}, 0 0 0 1px rgba(255,255,255,0.08)`,
+                    transform: 'translateY(-3px)',
+                    backgroundColor: 'rgba(255,255,255,0.14)',
+                    borderColor: '#e8c9a0',
+                    boxShadow: '0 12px 32px rgba(212,175,138,0.25), inset 0 0 0 1px rgba(212,175,138,0.1)',
                   },
                 }}
               >
@@ -301,11 +333,12 @@ function HomePage() {
               </Button>
             </motion.div>
           </Box>
-        </Container>
       </Box>
 
-      {/* New Arrivals */}
-      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 9 } }}>
+      {/* Content Area - follows hero normally */}
+      <Box sx={{ position: 'relative', zIndex: 1 }}>
+        {/* New Arrivals */}
+        <Container maxWidth="lg" sx={{ py: { xs: 6, md: 9 } }}>
         <ScrollReveal>
           <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
             <Typography variant="h2">New Arrivals</Typography>
@@ -316,56 +349,56 @@ function HomePage() {
             <LookbookSlider />
           </Box>
         </ScrollReveal>
-      </Container>
+        </Container>
 
       {/* Collection Banner */}
-      <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 9 } }}>
+        <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 9 } }}>
         <ScrollReveal delay={0.1}>
-        <Box sx={{ position: 'relative', borderRadius: 3, overflow: 'hidden' }}>
-          <Box
-            component="img"
-            src={cfg.collectionImage || collection}
-            alt="Collection"
-            sx={{ width: '100%', height: { xs: 260, md: 360 }, objectFit: 'cover', filter: 'grayscale(12%)' }}
-          />
-          <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.25)' }} />
-          <Stack spacing={1} sx={{ position: 'absolute', left: { xs: 16, md: 32 }, bottom: { xs: 16, md: 24 }, color: 'common.white' }}>
-            <Typography variant="h2" sx={{ letterSpacing: 6 }}>COLLECTION</Typography>
-            <Button component={Link} to="/products" variant="contained" size="medium" sx={{ width: 'fit-content', borderRadius: 999 }}>View</Button>
-          </Stack>
-        </Box>
+          <Box sx={{ position: 'relative', borderRadius: 3, overflow: 'hidden' }}>
+            <Box
+              component="img"
+              src={cfg.collectionImage || collection}
+              alt="Collection"
+              sx={{ width: '100%', height: { xs: 260, md: 360 }, objectFit: 'cover', filter: 'grayscale(12%)' }}
+            />
+            <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.25)' }} />
+            <Stack spacing={1} sx={{ position: 'absolute', left: { xs: 16, md: 32 }, bottom: { xs: 16, md: 24 }, color: 'common.white' }}>
+              <Typography variant="h2" sx={{ letterSpacing: 6 }}>COLLECTION</Typography>
+              <Button component={Link} to="/products" variant="contained" size="medium" sx={{ width: 'fit-content', borderRadius: 999 }}>View</Button>
+            </Stack>
+          </Box>
         </ScrollReveal>
-      </Container>
+        </Container>
 
       {/* Editorial / Lifestyle Section */}
-      <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 9 } }}>
+        <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 9 } }}>
         <ScrollReveal delay={0.1}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Box sx={{ borderRadius: 3, overflow: 'hidden', height: { xs: 280, md: 420 } }}>
-              <Box
-                component="img"
-                src={Lifestyle}
-                alt="Editorial 1"
-                sx={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(8%)' }}
-              />
-            </Box>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Stack spacing={2} sx={{ height: '100%', justifyContent: 'center' }}>
-              <Typography variant="h2">Twice as Cozy</Typography>
-              <Typography variant="body1" color="text.secondary">
-                Discover elevated textures and refined silhouettes crafted for comfort and intention. Layer softly, move freely, and live beautifully.
-              </Typography>
-              <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
-                <Button component={Link} to="/products?category=coats" variant="outlined">Shop Coats</Button>
-                <Button component={Link} to="/products?category=knitwear" variant="text">Shop Knitwear</Button>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ borderRadius: 3, overflow: 'hidden', height: { xs: 280, md: 420 } }}>
+                <Box
+                  component="img"
+                  src={Lifestyle}
+                  alt="Editorial 1"
+                  sx={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(8%)' }}
+                />
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Stack spacing={2} sx={{ height: '100%', justifyContent: 'center' }}>
+                <Typography variant="h2">Twice as Cozy</Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Discover elevated textures and refined silhouettes crafted for comfort and intention. Layer softly, move freely, and live beautifully.
+                </Typography>
+                <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+                  <Button component={Link} to="/products?category=coats" variant="outlined">Shop Coats</Button>
+                  <Button component={Link} to="/products?category=knitwear" variant="text">Shop Knitwear</Button>
+                </Stack>
               </Stack>
-            </Stack>
+            </Grid>
           </Grid>
-        </Grid>
         </ScrollReveal>
-      </Container>
+        </Container>
 
       {/* Minimal Footer */}
       <Divider />
@@ -397,7 +430,8 @@ function HomePage() {
             </Stack>
           </Grid>
         </Grid>
-      </Container>
+        </Container>
+      </Box>
     </Box>
   );
 }
