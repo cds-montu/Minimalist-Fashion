@@ -1,7 +1,38 @@
-// Curated product catalog for realistic fashion imagery
-// NOTE: Add high-quality images to `public/assests/products/` matching the `image` paths below.
+// Curated product catalog with local images from assets/images
+// Images imported and mapped by category: Fashion, Beauty, Electronics, Home
+
+// Fashion Images
+import fashion1 from '../../../assests/images/fashion1.jpeg';
+import fashion2 from '../../../assests/images/fashion2.jpeg';
+import fashion3 from '../../../assests/images/fashion3.jpeg';
+import fashion4 from '../../../assests/images/fashion4.jpeg';
+import fashion5 from '../../../assests/images/fashion5.jpeg';
+
+// Beauty Images
+import beauty1 from '../../../assests/images/beauty1.jpeg';
+import beauty2 from '../../../assests/images/beauty2.jpeg';
+import beauty3 from '../../../assests/images/beauty3.jpeg';
+import beauty4 from '../../../assests/images/beauty4.jpeg';
+import beauty5 from '../../../assests/images/beauty5.jpeg';
+import beauty6 from '../../../assests/images/beauty6.jpeg';
+import beauty7 from '../../../assests/images/beauty7.jpeg';
+
+// Electronics Images
+import electronics1 from '../../../assests/images/electronics1.jpeg';
+import electronics2 from '../../../assests/images/electronics2.jpeg';
+import electronics3 from '../../../assests/images/electronics3.jpeg';
+import electronics4 from '../../../assests/images/electronics4.jpeg';
+import electronics5 from '../../../assests/images/electronics5.jpeg';
+import electronics6 from '../../../assests/images/electronics6.jpeg';
+
+// Home & Decor Images
+import home1 from '../../../assests/images/home1.jpeg';
+import home2 from '../../../assests/images/home2.jpeg';
+import home4 from '../../../assests/images/home4.jpeg';
+import homme3 from '../../../assests/images/homme3.jpeg';
 
 const products = [
+  // ========== FASHION CATEGORY ==========
   {
     id: 1,
     title: 'Essential Cotton Oversized T-Shirt',
@@ -13,10 +44,9 @@ const products = [
     size: 'S,M,L,XL',
     fabric: 'Cotton Jersey',
     fit: 'Oversized',
-    description: 'Premium cotton oversized tee with soft handfeel and clean seams. Studio shot on neutral background.',
+    description: 'Premium cotton oversized tee with soft handfeel and clean seams. Studio shot with minimalist styling.',
     tags: ['top', 'new'],
-    image: '/assests/products/oversized-tee-offwhite-1.jpg',
-    images: ['/assests/products/oversized-tee-offwhite-1.jpg','/assests/products/oversized-tee-offwhite-2.jpg']
+    image: fashion1,
   },
   {
     id: 2,
@@ -31,8 +61,7 @@ const products = [
     fit: 'Slim',
     description: 'Clean-cut slim denim with medium-weight cotton for structure. Front-facing studio image with accurate color.',
     tags: ['bottom'],
-    image: '/assests/products/slim-jeans-indigo-1.jpg',
-    images: ['/assests/products/slim-jeans-indigo-1.jpg','/assests/products/slim-jeans-indigo-2.jpg']
+    image: fashion2,
   },
   {
     id: 3,
@@ -45,10 +74,9 @@ const products = [
     size: 'S,M,L,XL',
     fabric: 'Linen',
     fit: 'Regular',
-    description: 'Breathable linen shirt with natural texture, photographed on model in urban setting for lifestyle context.',
+    description: 'Breathable linen shirt with natural texture, shot in a minimalist lifestyle setting.',
     tags: ['shirt', 'new'],
-    image: '/assests/products/linen-shirt-sand-1.jpg',
-    images: ['/assests/products/linen-shirt-sand-1.jpg','/assests/products/linen-shirt-sand-2.jpg']
+    image: fashion3,
   },
   {
     id: 4,
@@ -61,10 +89,9 @@ const products = [
     size: 'S,M,L,XL',
     fabric: 'Cotton Fleece',
     fit: 'Regular',
-    description: 'Mid-weight hoodie with clean silhouette, shot on neutral background and worn in lifestyle imagery.',
+    description: 'Mid-weight hoodie with clean silhouette, soft interior texture, and premium finish.',
     tags: ['hoodie'],
-    image: '/assests/products/hoodie-charcoal-1.jpg',
-    images: ['/assests/products/hoodie-charcoal-1.jpg','/assests/products/hoodie-charcoal-2.jpg']
+    image: fashion4,
   },
   {
     id: 5,
@@ -77,98 +104,281 @@ const products = [
     size: 'S,M,L,XL',
     fabric: 'Wool Blend',
     fit: 'Tailored',
-    description: 'Longline wool overcoat with structured shoulders, studio-shot on mannequin and model lifestyle shots.',
+    description: 'Longline wool overcoat with structured shoulders and timeless silhouette. Statement piece for any wardrobe.',
     tags: ['outerwear'],
-    image: '/assests/products/wool-overcoat-camel-1.jpg',
-    images: ['/assests/products/wool-overcoat-camel-1.jpg','/assests/products/wool-overcoat-camel-2.jpg']
+    image: fashion5,
   },
+
+  // ========== BEAUTY CATEGORY ==========
   {
-    id: 6,
-    title: 'Relaxed Cotton Chinos',
-    brand: 'Coastal & Co',
-    category: 'Fashion',
-    price: 79.0,
-    rating: 4.3,
-    color: 'Khaki',
-    size: '30,32,34,36',
-    fabric: 'Cotton Twill',
-    fit: 'Relaxed',
-    description: 'Comfortable chinos with soft drape, photographed front-facing for clarity.',
-    tags: ['bottom'],
-    image: '/assests/products/chinos-khaki-1.jpg',
-    images: ['/assests/products/chinos-khaki-1.jpg','/assests/products/chinos-khaki-2.jpg']
-  },
-  {
-    id: 7,
-    title: 'Ribbed Merino Knit Sweater',
-    brand: 'Atelier Knit',
-    category: 'Fashion',
-    price: 140.0,
-    rating: 4.7,
-    color: 'Beige',
-    size: 'S,M,L,XL',
-    fabric: 'Merino Wool',
-    fit: 'Regular',
-    description: 'Fine-gauge merino knit with ribbed texture, photographed in studio with soft light to show fabric detail.',
-    tags: ['knit'],
-    image: '/assests/products/merino-sweater-beige-1.jpg',
-    images: ['/assests/products/merino-sweater-beige-1.jpg','/assests/products/merino-sweater-beige-2.jpg']
-  },
-  {
-    id: 8,
-    title: 'Boxy Denim Jacket',
-    brand: 'Minimal Atelier',
-    category: 'Fashion',
-    price: 150.0,
-    rating: 4.5,
-    color: 'Light Blue',
-    size: 'S,M,L,XL',
-    fabric: 'Denim',
-    fit: 'Boxy',
-    description: 'Cropped boxy denim jacket with contrast stitching. Studio and model images included.',
-    tags: ['jacket'],
-    image: '/assests/products/denim-jacket-lightblue-1.jpg',
-    images: ['/assests/products/denim-jacket-lightblue-1.jpg','/assests/products/denim-jacket-lightblue-2.jpg']
-  },
-  {
-    id: 9,
-    title: 'Silk-Cotton Blend Blouse',
-    brand: 'Maison Neat',
-    category: 'Fashion',
-    price: 130.0,
+    id: 11,
+    title: 'Luxury Facial Serum',
+    brand: 'Glow Essentials',
+    category: 'Beauty',
+    price: 68.0,
     rating: 4.6,
-    color: 'Ivory',
-    size: 'XS,S,M,L',
-    fabric: 'Silk Cotton',
-    fit: 'Relaxed',
-    description: 'Lightweight blouse with subtle sheen, photographed on model in minimalist environment.',
-    tags: ['blouse'],
-    image: '/assests/products/silk-blouse-ivory-1.jpg',
-    images: ['/assests/products/silk-blouse-ivory-1.jpg','/assests/products/silk-blouse-ivory-2.jpg']
+    color: 'Clear',
+    size: '30ml',
+    fabric: null,
+    fit: null,
+    description: 'Lightweight facial serum with hyaluronic acid and botanical extracts. Hydrates and brightens complexion.',
+    tags: ['serums', 'new'],
+    image: beauty1,
   },
   {
-    id: 10,
-    title: 'Technical Rain Jacket',
-    brand: 'Urban Shield',
-    category: 'Fashion',
-    price: 220.0,
+    id: 12,
+    title: 'Organic Moisturizing Face Cream',
+    brand: 'Pure Botanicals',
+    category: 'Beauty',
+    price: 54.0,
+    rating: 4.7,
+    color: 'White',
+    size: '50ml',
+    fabric: null,
+    fit: null,
+    description: 'Rich, nourishing cream with organic oils. Perfect for dry and sensitive skin types.',
+    tags: ['moisturizer'],
+    image: beauty2,
+  },
+  {
+    id: 13,
+    title: 'Silk Pillowcase Set',
+    brand: 'Luxe Sleep',
+    category: 'Beauty',
+    price: 72.0,
+    rating: 4.5,
+    color: 'Blush',
+    size: '2 pillowcases',
+    fabric: 'Silk',
+    fit: null,
+    description: 'Premium mulberry silk pillowcases reduce friction and support hair and skin health.',
+    tags: ['skincare'],
+    image: beauty3,
+  },
+  {
+    id: 14,
+    title: 'Gentle Cleansing Oil',
+    brand: 'Glow Essentials',
+    category: 'Beauty',
+    price: 42.0,
     rating: 4.4,
+    color: 'Golden',
+    size: '100ml',
+    fabric: null,
+    fit: null,
+    description: 'Lightweight oil cleanser that dissolves makeup and impurities without stripping skin.',
+    tags: ['cleanser', 'new'],
+    image: beauty4,
+  },
+  {
+    id: 15,
+    title: 'Vitamin C Eye Cream',
+    brand: 'Bright & Radiant',
+    category: 'Beauty',
+    price: 58.0,
+    rating: 4.6,
+    color: 'Pale Yellow',
+    size: '15ml',
+    fabric: null,
+    fit: null,
+    description: 'Targeted eye cream with vitamin C to brighten and reduce fine lines. Lightweight formula.',
+    tags: ['eye care'],
+    image: beauty5,
+  },
+  {
+    id: 16,
+    title: 'Hydrating Face Mask',
+    brand: 'Pure Botanicals',
+    category: 'Beauty',
+    price: 35.0,
+    rating: 4.5,
+    color: 'White',
+    size: '75ml',
+    fabric: null,
+    fit: null,
+    description: 'Weekly hydrating mask with aloe and chamomile. Leaves skin soft and supple.',
+    tags: ['masks', 'new'],
+    image: beauty6,
+  },
+  {
+    id: 17,
+    title: 'Luxury Lip Balm',
+    brand: 'Luxe Sleep',
+    category: 'Beauty',
+    price: 22.0,
+    rating: 4.7,
+    color: 'Rose',
+    size: '5g',
+    fabric: null,
+    fit: null,
+    description: 'Nourishing lip balm with natural butters and essential oils. SPF 15 protection.',
+    tags: ['lip care'],
+    image: beauty7,
+  },
+
+  // ========== ELECTRONICS CATEGORY ==========
+  {
+    id: 21,
+    title: 'Minimalist Wireless Earbuds',
+    brand: 'SoundTech Pro',
+    category: 'Electronics',
+    price: 149.0,
+    rating: 4.6,
     color: 'Black',
-    size: 'S,M,L,XL',
-    fabric: 'Waterproof Shell',
-    fit: 'Regular',
-    description: 'Seam-sealed technical jacket with matte finish; front-facing studio shots highlight details.',
-    tags: ['outerwear'],
-    image: '/assests/products/rain-jacket-black-1.jpg',
-    images: ['/assests/products/rain-jacket-black-1.jpg','/assests/products/rain-jacket-black-2.jpg']
-  }
+    size: 'One Size',
+    fabric: null,
+    fit: null,
+    description: 'Premium wireless earbuds with active noise cancellation and 8-hour battery life.',
+    tags: ['audio', 'new'],
+    image: electronics1,
+  },
+  {
+    id: 22,
+    title: 'Smart Watch - Minimalist Design',
+    brand: 'Digital Essentials',
+    category: 'Electronics',
+    price: 299.0,
+    rating: 4.7,
+    color: 'Silver',
+    size: 'One Size',
+    fabric: null,
+    fit: null,
+    description: 'Sleek smartwatch with health tracking, notifications, and minimalist interface.',
+    tags: ['wearables'],
+    image: electronics2,
+  },
+  {
+    id: 23,
+    title: 'Portable Power Bank 10000mAh',
+    brand: 'ChargeHub',
+    category: 'Electronics',
+    price: 39.0,
+    rating: 4.5,
+    color: 'White',
+    size: '10000mAh',
+    fabric: null,
+    fit: null,
+    description: 'Lightweight and compact power bank with fast charging capability for phones and tablets.',
+    tags: ['accessories', 'new'],
+    image: electronics3,
+  },
+  {
+    id: 24,
+    title: 'USB-C Multi-Port Hub',
+    brand: 'TechConnect',
+    category: 'Electronics',
+    price: 59.0,
+    rating: 4.4,
+    color: 'Gray',
+    size: 'One Size',
+    fabric: null,
+    fit: null,
+    description: 'All-in-one hub with HDMI, USB 3.0, and SD card reader. Perfect for modern laptops.',
+    tags: ['connectivity'],
+    image: electronics4,
+  },
+  {
+    id: 25,
+    title: 'Wireless Charging Pad',
+    brand: 'ChargeHub',
+    category: 'Electronics',
+    price: 35.0,
+    rating: 4.6,
+    color: 'Black',
+    size: 'Standard',
+    fabric: null,
+    fit: null,
+    description: 'Sleek wireless charging pad compatible with all Qi-enabled devices. Minimal design.',
+    tags: ['accessories', 'new'],
+    image: electronics5,
+  },
+  {
+    id: 26,
+    title: 'Noise-Cancelling Over-Ear Headphones',
+    brand: 'SoundTech Pro',
+    category: 'Electronics',
+    price: 199.0,
+    rating: 4.7,
+    color: 'Matte Black',
+    size: 'One Size',
+    fabric: null,
+    fit: null,
+    description: 'Premium over-ear headphones with superior noise cancellation and 30-hour battery.',
+    tags: ['audio'],
+    image: electronics6,
+  },
+
+  // ========== HOME & DECOR CATEGORY ==========
+  {
+    id: 31,
+    title: 'Minimalist Ceramic Vase',
+    brand: 'Home Elegance',
+    category: 'Home',
+    price: 52.0,
+    rating: 4.5,
+    color: 'White',
+    size: 'Medium',
+    fabric: 'Ceramic',
+    fit: null,
+    description: 'Hand-crafted ceramic vase with clean lines and matte finish. Perfect for fresh flowers.',
+    tags: ['decor', 'new'],
+    image: home1,
+  },
+  {
+    id: 32,
+    title: 'Organic Linen Table Runner',
+    brand: 'Textile Atelier',
+    category: 'Home',
+    price: 48.0,
+    rating: 4.6,
+    color: 'Natural',
+    size: '180x40cm',
+    fabric: 'Linen',
+    fit: null,
+    description: 'Sustainable linen table runner with natural texture. Adds warmth to any dining space.',
+    tags: ['textiles'],
+    image: home2,
+  },
+  {
+    id: 33,
+    title: 'Sculptural Wooden Bookend Set',
+    brand: 'Artisan Craft',
+    category: 'Home',
+    price: 78.0,
+    rating: 4.7,
+    color: 'Natural Oak',
+    size: 'Set of 2',
+    fabric: 'Wood',
+    fit: null,
+    description: 'Beautifully carved wooden bookends as functional art. Complements minimalist interiors.',
+    tags: ['accessories', 'new'],
+    image: home4,
+  },
+  {
+    id: 34,
+    title: 'Modern Pendant Light Fixture',
+    brand: 'Illuminate',
+    category: 'Home',
+    price: 145.0,
+    rating: 4.6,
+    color: 'Matte Black',
+    size: 'One Size',
+    fabric: null,
+    fit: null,
+    description: 'Contemporary pendant light with dimmer control. Creates ambient lighting in any room.',
+    tags: ['lighting', 'new'],
+    image: homme3,
+  },
 ];
 
 export const facets = {
-  categories: ['Fashion'],
-  brands: Array.from(new Set(products.map((p) => p.brand))).slice(0, 8),
-  colors: Array.from(new Set(products.map((p) => p.color))).slice(0, 8),
-  sizes: Array.from(new Set(products.flatMap((p) => (typeof p.size === 'string' ? p.size.split(',') : [p.size])))).slice(0, 8),
+  categories: Array.from(new Set(products.map((p) => p.category))).sort(),
+  brands: Array.from(new Set(products.map((p) => p.brand))).sort().slice(0, 12),
+  colors: Array.from(new Set(products.map((p) => p.color).filter(c => c))).sort().slice(0, 12),
+  sizes: Array.from(new Set(products.flatMap((p) => {
+    if (!p.size) return [];
+    return typeof p.size === 'string' ? p.size.split(',').map(s => s.trim()) : [p.size];
+  }))).sort().slice(0, 12),
 };
 
 export default products;
