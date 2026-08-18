@@ -18,7 +18,7 @@ import { useAuth } from 'state/AuthContext';
 
 export default function SignUpPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { signup } = useAuth();
   const [showPass, setShowPass] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState('');
@@ -42,15 +42,10 @@ export default function SignUpPage() {
     if (!ok(form.password)) { setError('Please satisfy all password rules.'); return; }
     try {
       setLoading(true);
-      const creds = { email: form.email, password: form.password };
-      localStorage.setItem('auth:creds', JSON.stringify(creds));
-      // Optionally also persist display name
-      localStorage.setItem('auth:displayName', form.name);
-      // Auto-login then go home
-      await login({ email: form.email, name: form.name });
+      await signup({ name: form.name, email: form.email, password: form.password });
       navigate('/');
     } catch (err) {
-      setError('Failed to save credentials.');
+      setError(err?.message || 'Failed to create account.');
     } finally {
       setLoading(false);
     }

@@ -6,8 +6,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import { useLocation, useNavigate } from 'react-router-dom';
-
-const REQUIRED_ADMIN_ID = 'ADMIN-2025-SECURE';
+import { isAdminAccessConfigured, startAdminSession } from 'services/adminSession';
 
 export default function AdminLoginPage() {
   const [value, setValue] = React.useState('');
@@ -18,8 +17,11 @@ export default function AdminLoginPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (value.trim() === REQUIRED_ADMIN_ID) {
-      localStorage.setItem('adminId', REQUIRED_ADMIN_ID);
+    if (!isAdminAccessConfigured()) {
+      setError('Admin access is not configured for this deployment.');
+      return;
+    }
+    if (startAdminSession(value)) {
       navigate(from, { replace: true });
     } else {
       setError('Invalid Admin ID');
@@ -38,9 +40,10 @@ export default function AdminLoginPage() {
           fullWidth
           autoFocus
           autoComplete="off"
+          type="password"
           sx={{ mb: 2 }}
         />
-        <Button type="submit" variant="contained" fullWidth>Enter</Button>
+        <Button type="submit" variant="contained" fullWidth disabled={!isAdminAccessConfigured()}>Enter</Button>
         <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
           This area is restricted. Enter the provided Admin ID.
         </Typography>

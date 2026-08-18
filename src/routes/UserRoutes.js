@@ -1,4 +1,5 @@
 import React from 'react';
+import RequireAuth from './guards/RequireAuth';
 
 // Lazy-loaded user/auth/cart/profile routes
 const LoginPage = React.lazy(() => import('../pages/LoginPage'));
@@ -16,12 +17,12 @@ const NotFoundPage = React.lazy(() => import('../pages/NotFoundPage'));
 const userRoutes = [
   { path: '/login', element: <LoginPage /> },
   { path: '/signup', element: <SignUpPage /> },
-  { path: '/profile/*', element: <ProfilePage /> },
+  { path: '/profile/*', element: <RequireAuth><ProfilePage /></RequireAuth> },
   { path: '/wishlist', element: <WishlistPage /> },
   { path: '/cart', element: <CartPage /> },
-  { path: '/checkout', element: <CheckoutPage /> },
-  { path: '/orders', element: <OrdersPage /> },
-  { path: '/orders/:id', element: <OrderDetailPage /> },
+  { path: '/checkout', element: <RequireAuth><CheckoutPage /></RequireAuth> },
+  { path: '/orders', element: <RequireAuth><OrdersPage /></RequireAuth> },
+  { path: '/orders/:id', element: <RequireAuth><OrderDetailPage /></RequireAuth> },
   // Global catch-all (for non-admin unmatched routes)
   { path: '*', element: <NotFoundPage /> },
 ];

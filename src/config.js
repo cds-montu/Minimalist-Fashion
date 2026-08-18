@@ -1,6 +1,4 @@
 // Application configuration
-console.log(REACT_APP_GOOGLE_CLIENT_ID);
-
 const config = {
   google: {
     clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID,
@@ -11,7 +9,7 @@ const config = {
 };
 
 // Validate required configurations
-if (!config.google.clientId || config.google.clientId === 'YOUR_GOOGLE_CLIENT_ID_HERE') {
+if (!config.google.clientId) {
   console.error('Google OAuth Client ID is not configured. Please check your .env file.');
 }
 

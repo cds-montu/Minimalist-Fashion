@@ -1,15 +1,13 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import { isAdminSessionValid } from 'services/adminSession';
 
-// Simple admin guard with hardcoded Admin ID requirement.
-// Note: For production, replace this client-side check with a secure server-side auth flow.
+// Client-side admin gate. This only hides the admin UI; it is NOT an
+// authorization boundary. Every admin API call must be authorized server-side.
 export default function RequireAdmin({ children }) {
   const location = useLocation();
-  const REQUIRED_ADMIN_ID = 'ADMIN-2025-SECURE';
-  const adminId = localStorage.getItem('adminId');
-  const isAdmin = adminId === REQUIRED_ADMIN_ID;
 
-  if (!isAdmin) {
+  if (!isAdminSessionValid()) {
     return <Navigate to="/admin/login" replace state={{ from: location }} />;
   }
   return children;
