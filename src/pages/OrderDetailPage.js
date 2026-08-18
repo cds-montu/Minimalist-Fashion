@@ -18,6 +18,7 @@ import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import { getOrderById, updateOrderStatus, requestRMA } from 'services/ordersStore';
+import { errorMessage } from 'core/utils/storage';
 
 const STEPS = ['Pending', 'Packed', 'Shipped', 'Delivered'];
 
@@ -69,13 +70,23 @@ export default function OrderDetailPage() {
   const doAdvance = () => {
     const idx = STEPS.indexOf(order.status);
     if (idx === -1 || idx === STEPS.length - 1) return;
-    updateOrderStatus(order.id, STEPS[idx + 1]);
+    try {
+      updateOrderStatus(order.id, STEPS[idx + 1]);
+      setError('');
+    } catch (err) {
+      setError(errorMessage(err, 'Could not update the order status.'));
+    }
   };
 
   const submitRMA = () => {
     setError('');
     if (!['refund', 'return', 'exchange'].includes(rmaType)) { setError('Select a valid request type.'); return; }
-    requestRMA(order.id, rmaType, rmaNote || undefined);
+    try {
+      requestRMA(order.id, rmaType, rmaNote || undefined);
+    } catch (err) {
+      setError(errorMessage(err, 'Could not submit your request.'));
+      return;
+    }
     setRmaOpen(false);
   };
 

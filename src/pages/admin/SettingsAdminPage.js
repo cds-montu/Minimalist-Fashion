@@ -5,16 +5,24 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
+import { errorMessage, readJSON, writeJSON } from 'core/utils/storage';
+
+const STORAGE_KEY = 'admin:settings';
+const defaultSettings = { name: 'My Store', currency: 'USD', supportEmail: 'support@example.com' };
 
 export default function SettingsAdminPage() {
-  const STORAGE_KEY = 'admin:settings';
-  const [store, setStore] = React.useState(() => {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { name: 'My Store', currency: 'USD', supportEmail: 'support@example.com' }; } catch { return { name: 'My Store', currency: 'USD', supportEmail: 'support@example.com' }; }
-  });
+  const [store, setStore] = React.useState(() => readJSON(STORAGE_KEY, defaultSettings));
   const [saved, setSaved] = React.useState(false);
+  const [error, setError] = React.useState('');
 
   const save = () => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); } catch {}
+    try {
+      writeJSON(STORAGE_KEY, store);
+    } catch (err) {
+      setError(errorMessage(err, 'Could not save settings.'));
+      return;
+    }
+    setError('');
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
   };
@@ -27,6 +35,7 @@ export default function SettingsAdminPage() {
         <TextField label="Currency" value={store.currency} onChange={(e) => setStore({ ...store, currency: e.target.value })} />
         <TextField label="Support Email" type="email" value={store.supportEmail} onChange={(e) => setStore({ ...store, supportEmail: e.target.value })} />
         <Button variant="contained" onClick={save}>Save</Button>
+        {error && <Alert severity="error" onClose={() => setError('')}>{error}</Alert>}
         {saved && <Alert severity="success">Settings saved</Alert>}
       </Stack>
     </Box>

@@ -1,14 +1,20 @@
 import React from 'react';
+import { logWarning, readJSON, writeJSON } from 'core/utils/storage';
 
 export const NotificationsContext = React.createContext();
 
 const STORAGE_KEY = 'notifications:list';
 
 function load() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+  const stored = readJSON(STORAGE_KEY, []);
+  return Array.isArray(stored) ? stored : [];
 }
 function save(list) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch {}
+  try {
+    writeJSON(STORAGE_KEY, list);
+  } catch (error) {
+    logWarning('NotificationsContext:persist', error);
+  }
 }
 
 export function NotificationsProvider({ children }) {
@@ -52,5 +58,7 @@ export function NotificationsProvider({ children }) {
 }
 
 export function useNotifications() {
-  return React.useContext(NotificationsContext);
+  const context = React.useContext(NotificationsContext);
+  if (!context) throw new Error('useNotifications must be used within a NotificationsProvider');
+  return context;
 }

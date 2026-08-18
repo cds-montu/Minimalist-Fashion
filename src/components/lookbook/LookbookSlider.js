@@ -9,6 +9,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { alpha } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { ENV, API_ROUTES } from 'core/config/env';
+import { logWarning, readJSON, writeJSON } from 'core/utils/storage';
 
 // Lightweight editorial lookbook slider with scroll-snap and programmatic controls
 // Usage: <LookbookSlider slides={[{ src, title, subtitle }]}/>
@@ -30,12 +31,10 @@ export default function LookbookSlider({ slides = [], autoplay = true, intervalM
     if (slides && slides.length) { setData(slides); return; }
     const CACHE_KEY = 'lookbook:slides';
     const TTL = 24 * 60 * 60 * 1000; // 24h
-    try {
-      const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-      if (cached && (Date.now() - cached.ts < TTL) && Array.isArray(cached.items)) {
-        setData(cached.items);
-      }
-    } catch {}
+    const cached = readJSON(CACHE_KEY, null);
+    if (cached && (Date.now() - cached.ts < TTL) && Array.isArray(cached.items)) {
+      setData(cached.items);
+    }
     const base = ENV.API_BASE_URL;
     if (!base) { setData((prev) => (prev && prev.length ? prev : defaultSlides)); return; }
     const url = base.replace(/\/$/, '') + API_ROUTES.lookbook;
@@ -45,12 +44,21 @@ export default function LookbookSlider({ slides = [], autoplay = true, intervalM
         const items = Array.isArray(json) ? json : (Array.isArray(json?.items) ? json.items : []);
         if (items.length) {
           setData(items);
-          try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), items })); } catch {}
+          try {
+            writeJSON(CACHE_KEY, { ts: Date.now(), items });
+          } catch (error) {
+            logWarning('LookbookSlider:cache', error);
+          }
         } else {
           setData(defaultSlides);
         }
       })
-      .catch(() => setData(defaultSlides));
+      .catch((error) => {
+        // The lookbook is decorative: fall back to the bundled slides, but keep
+        // the failure visible in the console instead of dropping it.
+        logWarning('LookbookSlider:fetch', error);
+        setData(defaultSlides);
+      });
   }, [slides]);
 
   // Autoplay with pause on hover

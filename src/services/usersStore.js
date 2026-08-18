@@ -1,19 +1,19 @@
 // Simple localStorage-backed users store for Admin panel
 // Provides CRUD, search/filter, and pagination.
 
+import { logWarning, readJSON, writeJSON } from 'core/utils/storage';
+
 const STORAGE_KEY = 'admin:users';
 
 function dispatchUpdated() {
-  try {
+  if (typeof window !== 'undefined' && window.dispatchEvent) {
     window.dispatchEvent(new CustomEvent('users:updated'));
-  } catch {}
+  }
 }
 
 function load() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
+  const stored = readJSON(STORAGE_KEY, null);
+  if (Array.isArray(stored)) return stored;
   const roles = ['admin', 'user', 'manager', 'support'];
   const seed = Array.from({ length: 24 }).map((_, i) => ({
     id: i + 1,
@@ -24,12 +24,17 @@ function load() {
     avatar: '',
     createdAt: Date.now() - i * 86400000,
   }));
-  save(seed);
+  // Seeding is best-effort: reads must not fail when storage is unwritable.
+  try {
+    save(seed);
+  } catch (error) {
+    logWarning('usersStore:seed', error);
+  }
   return seed;
 }
 
 function save(list) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch {}
+  writeJSON(STORAGE_KEY, list);
 }
 
 export function getAllUsers() {

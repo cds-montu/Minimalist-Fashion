@@ -30,8 +30,10 @@ import DialogActions from '@mui/material/DialogActions';
 import Divider from '@mui/material/Divider';
 import Checkbox from '@mui/material/Checkbox';
 // import FormHelperText from '@mui/material/FormHelperText';
+import Alert from '@mui/material/Alert';
 import { upsertUser, removeUser, queryUsers, toggleUserStatus } from 'services/usersStore';
 import { bulkRemoveUsers, setUsersStatus } from 'services/usersStore';
+import { errorMessage } from 'core/utils/storage';
 
 export default function UsersAdminPage() {
   const [q, setQ] = React.useState('');
@@ -48,6 +50,18 @@ export default function UsersAdminPage() {
   const [toDelete, setToDelete] = React.useState(null);
   const [selected, setSelected] = React.useState([]);
   const [errors, setErrors] = React.useState({});
+  const [saveError, setSaveError] = React.useState('');
+
+  const persist = (action, fallbackMessage) => {
+    try {
+      action();
+      setSaveError('');
+      return true;
+    } catch (err) {
+      setSaveError(errorMessage(err, fallbackMessage));
+      return false;
+    }
+  };
 
   const load = React.useCallback(() => {
     const { items, totalPages: tp } = queryUsers({ q, role, status, page, pageSize });
@@ -77,7 +91,7 @@ export default function UsersAdminPage() {
     if (!current.id && (!current.password || current.password.length < 6)) nextErrors.password = 'Password must be at least 6 characters';
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
-    upsertUser(current);
+    if (!persist(() => upsertUser(current), 'Could not save the user.')) return;
     setEditOpen(false);
     setPage(1);
     load();
@@ -85,7 +99,7 @@ export default function UsersAdminPage() {
 
   const doDelete = () => {
     if (!toDelete) return;
-    removeUser(toDelete.id);
+    persist(() => removeUser(toDelete.id), 'Could not delete the user.');
     setConfirmOpen(false);
     setToDelete(null);
     load();
@@ -96,7 +110,12 @@ export default function UsersAdminPage() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => setCurrent((c) => ({ ...c, avatar: reader.result }));
-    reader.readAsDataURL(file);
+    reader.onerror = () => setSaveError('Could not read the selected image file.');
+    try {
+      reader.readAsDataURL(file);
+    } catch (err) {
+      setSaveError(errorMessage(err, 'Could not read the selected image file.'));
+    }
   };
 
   // Selection helpers (fixes ESLint: no-undef for toggleSelectAll/toggleSelect)
@@ -111,13 +130,13 @@ export default function UsersAdminPage() {
   // Bulk actions (fixes ESLint: no-undef for runBulkDelete/runBulkSet)
   const runBulkDelete = () => {
     if (!selected.length) return;
-    bulkRemoveUsers(selected);
+    persist(() => bulkRemoveUsers(selected), 'Could not delete the selected users.');
     setSelected([]);
     load();
   };
   const runBulkSet = (statusValue) => {
     if (!selected.length) return;
-    setUsersStatus(selected, statusValue);
+    persist(() => setUsersStatus(selected, statusValue), 'Could not update the selected users.');
     setSelected([]);
     load();
   };
@@ -142,6 +161,8 @@ export default function UsersAdminPage() {
         </Stack>
       </Stack>
 
+      {saveError && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setSaveError('')}>{saveError}</Alert>}
+
       <TableContainer component={Paper}>
         <Table size="small">
           <TableHead>
@@ -163,7 +184,7 @@ export default function UsersAdminPage() {
                 <TableCell><Typography variant="subtitle2">{u.name}</Typography></TableCell>
                 <TableCell><Typography variant="body2" color="text.secondary">{u.email}</Typography></TableCell>
                 <TableCell>
-                  <Select size="small" value={u.role} onChange={(e) => upsertUser({ ...u, role: e.target.value })}>
+                  <Select size="small" value={u.role} onChange={(e) => persist(() => upsertUser({ ...u, role: e.target.value }), 'Could not update the user role.')}>
                     <MenuItem value="admin">Admin</MenuItem>
                     <MenuItem value="user">User</MenuItem>
                     <MenuItem value="manager">Manager</MenuItem>
@@ -173,7 +194,7 @@ export default function UsersAdminPage() {
                 <TableCell>
                   <Stack direction="row" spacing={1} alignItems="center">
                     <Chip size="small" label={u.status === 'active' ? 'Active' : 'Inactive'} color={u.status === 'active' ? 'success' : 'default'} variant={u.status === 'active' ? 'filled' : 'outlined'} />
-                    <Switch checked={u.status === 'active'} onChange={() => toggleUserStatus(u.id)} />
+                    <Switch checked={u.status === 'active'} onChange={() => persist(() => toggleUserStatus(u.id), 'Could not update the user status.')} />
                   </Stack>
                 </TableCell>
                 <TableCell align="right">

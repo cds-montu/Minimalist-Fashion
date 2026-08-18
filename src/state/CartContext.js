@@ -27,5 +27,7 @@ export function CartProvider({ children }) {
 }
 
 export function useCart() {
-  return React.useContext(CartContext);
+  const context = React.useContext(CartContext);
+  if (!context) throw new Error('useCart must be used within a CartProvider');
+  return context;
 }

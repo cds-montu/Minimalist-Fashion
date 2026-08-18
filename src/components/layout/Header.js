@@ -34,6 +34,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useUI } from 'state/UIContext';
 import BrandLogo from 'components/BrandLogo';
 import { fetchSearchSuggestions, saveRecentSearch } from 'services/searchApi';
+import { logWarning } from 'core/utils/storage';
 import { useAuth } from 'state/AuthContext';
 
 function Header() {
@@ -60,10 +61,16 @@ function Header() {
   React.useEffect(() => {
     let ignore = false;
     const t = setTimeout(() => {
-      fetchSearchSuggestions(q).then(({ suggestions, popular }) => {
-        if (ignore) return;
-        setOptions(suggestions.length ? suggestions : popular);
-      });
+      fetchSearchSuggestions(q)
+        .then(({ suggestions, popular }) => {
+          if (ignore) return;
+          setOptions(suggestions.length ? suggestions : popular);
+        })
+        .catch((error) => {
+          if (ignore) return;
+          logWarning('Header:fetchSearchSuggestions', error);
+          setOptions([]);
+        });
     }, 200);
     return () => { ignore = true; clearTimeout(t); };
   }, [q]);

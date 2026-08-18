@@ -17,7 +17,9 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Tooltip from '@mui/material/Tooltip';
+import Alert from '@mui/material/Alert';
 import { getAllProducts, upsertProduct, removeProduct as storeRemove } from 'services/productsStore';
+import { errorMessage } from 'core/utils/storage';
 
 export default function ProductsAdminPage() {
   const [q, setQ] = React.useState('');
@@ -27,6 +29,18 @@ export default function ProductsAdminPage() {
   const [confirm, setConfirm] = React.useState({ open: false, row: null });
   const [orderBy, setOrderBy] = React.useState('title');
   const [order, setOrder] = React.useState('asc'); // 'asc' | 'desc'
+  const [error, setError] = React.useState('');
+
+  const persist = (action, fallbackMessage) => {
+    try {
+      action();
+      setError('');
+      return true;
+    } catch (err) {
+      setError(errorMessage(err, fallbackMessage));
+      return false;
+    }
+  };
 
   const filtered = rows.filter(r => r.title.toLowerCase().includes(q.toLowerCase()));
   const comparator = React.useCallback((a, b) => {
@@ -55,10 +69,13 @@ export default function ProductsAdminPage() {
   const save = () => {
     if (!form.title.trim() || !form.price) return;
     const id = form.id || Date.now();
-    const next = upsertProduct({ ...form, id, price: Number(form.price) });
+    const ok = persist(
+      () => upsertProduct({ ...form, id, price: Number(form.price) }),
+      'Could not save the product.'
+    );
     // Refresh from store to reflect latest state
     setRows(getAllProducts().slice(0, 50));
-    setOpen(false);
+    if (ok) setOpen(false);
   };
 
   const edit = (r) => {
@@ -67,8 +84,14 @@ export default function ProductsAdminPage() {
   };
 
   const remove = (id) => {
-    storeRemove(id);
+    persist(() => storeRemove(id), 'Could not delete the product.');
     setRows(getAllProducts().slice(0, 50));
+  };
+
+  const saveRow = (id) => {
+    const row = rows.find((x) => x.id === id);
+    if (!row) return;
+    persist(() => upsertProduct(row), 'Could not save the product.');
   };
 
   const onFile = (e) => {
@@ -76,7 +99,12 @@ export default function ProductsAdminPage() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => setForm((f) => ({ ...f, image: reader.result }));
-    reader.readAsDataURL(file);
+    reader.onerror = () => setError('Could not read the selected image file.');
+    try {
+      reader.readAsDataURL(file);
+    } catch (err) {
+      setError(errorMessage(err, 'Could not read the selected image file.'));
+    }
   };
 
   return (
@@ -91,6 +119,7 @@ export default function ProductsAdminPage() {
           <Button variant="contained" onClick={openCreate}>New Product</Button>
         </Stack>
       </Stack>
+      {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
       <TableContainer component={Paper}>
         <Table size="small">
           <TableHead>
@@ -129,7 +158,7 @@ export default function ProductsAdminPage() {
                     variant="standard"
                     value={r.brand || ''}
                     onChange={(e) => setRows((prev) => prev.map((x) => x.id === r.id ? { ...x, brand: e.target.value } : x))}
-                    onBlur={() => upsertProduct(rows.find(x => x.id === r.id))}
+                    onBlur={() => saveRow(r.id)}
                     placeholder="-"
                     inputProps={{ 'aria-label': 'brand' }}
                   />
@@ -142,7 +171,7 @@ export default function ProductsAdminPage() {
                     variant="standard"
                     value={r.price}
                     onChange={(e) => setRows((prev) => prev.map((x) => x.id === r.id ? { ...x, price: e.target.value } : x))}
-                    onBlur={() => upsertProduct(rows.find(x => x.id === r.id))}
+                    onBlur={() => saveRow(r.id)}
                     inputProps={{ inputMode: 'numeric', step: '0.01', style: { textAlign: 'right' }, 'aria-label': 'price' }}
                   />
                 </TableCell>
