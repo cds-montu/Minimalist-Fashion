@@ -31,6 +31,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOnOutlined';
 import { Link } from 'react-router-dom';
 import { useWishlist } from 'state/WishlistContext';
 import { useAuth } from 'state/AuthContext';
+import { formatPrice } from 'core/utils/price';
 import Alert from '@mui/material/Alert';
 
 function TabPanel({ value, index, children }) {
@@ -170,7 +171,7 @@ function ProfilePage() {
                       </TableCell>
                       <TableCell>{o.date}</TableCell>
                       <TableCell>{o.items}</TableCell>
-                      <TableCell align="right">${o.total.toFixed(2)}</TableCell>
+                      <TableCell align="right">{formatPrice(o.total)}</TableCell>
                       <TableCell>{o.status}</TableCell>
                     </TableRow>
                   ))}
@@ -199,7 +200,7 @@ function ProfilePage() {
                     <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5, transition: 'all .2s ease', '&:hover': { boxShadow: 3, transform: 'translateY(-2px)' } }}>
                       <img alt={p.title} src={`https://picsum.photos/seed/${p.id}/320/220`} width="100%" height={160} style={{ borderRadius: 10, objectFit: 'cover' }} loading="lazy" />
                       <Typography variant="subtitle2" noWrap title={p.title} sx={{ mt: 1 }}>{p.title}</Typography>
-                      <Typography variant="body2" color="text.secondary">${p.price?.toFixed?.(2) ?? p.price}</Typography>
+                      <Typography variant="body2" color="text.secondary">{formatPrice(p.price)}</Typography>
                       <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
                         <Button size="small" component={Link} to={`/product/${p.id}`}>View</Button>
                         <Button size="small" color="error" onClick={() => toggle(p)}>Remove</Button>

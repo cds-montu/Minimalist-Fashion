@@ -5,16 +5,19 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
+import { readObject, writeJSON } from 'core/utils/storage';
+
+const STORAGE_KEY = 'admin:settings';
+const DEFAULT_SETTINGS = { name: 'My Store', currency: 'USD', supportEmail: 'support@example.com' };
 
 export default function SettingsAdminPage() {
-  const STORAGE_KEY = 'admin:settings';
   const [store, setStore] = React.useState(() => {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { name: 'My Store', currency: 'USD', supportEmail: 'support@example.com' }; } catch { return { name: 'My Store', currency: 'USD', supportEmail: 'support@example.com' }; }
+    return readObject(STORAGE_KEY, DEFAULT_SETTINGS);
   });
   const [saved, setSaved] = React.useState(false);
 
   const save = () => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); } catch {}
+    writeJSON(STORAGE_KEY, store);
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
   };

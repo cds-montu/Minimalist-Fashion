@@ -13,39 +13,16 @@ import Grid from '@mui/material/Grid';
 import Alert from '@mui/material/Alert';
 import { getAllProducts } from 'services/productsStore';
 import { getProductImage, onImgErrorSwap } from 'core/utils/imageForProduct';
-
-const STORAGE_KEY = 'home:config';
-
-const defaultConfig = {
-  welcomeText: 'Welcome to E-Shop',
-  themeMode: 'light', // light | dark | custom
-  customPrimaryColor: '#1976d2',
-  banner: { image: '', ctaText: 'Discover the latest products', buttonText: 'Shop Now', link: '/products' },
-  heroImage: '',
-  collectionImage: '',
-  featuredProducts: [],
-  layoutStyle: 'grid', // grid | list | masonry
-  widgets: { newArrivals: true, bestSellers: true, discounts: true, testimonials: false },
-};
-
-function loadConfig() {
-  try { return { ...defaultConfig, ...(JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}) }; } catch { return defaultConfig; }
-}
-
-function saveConfig(cfg) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); } catch {}
-}
+import { defaultHomeConfig, loadHomeConfig, saveHomeConfig } from 'core/config/homeConfig';
+import { APP_EVENTS } from 'core/utils/appEvents';
+import { useWindowEvent } from 'hooks/useWindowEvent';
 
 export default function CustomizeHomePage() {
-  const [cfg, setCfg] = React.useState(loadConfig());
+  const [cfg, setCfg] = React.useState(loadHomeConfig());
   const [saved, setSaved] = React.useState(false);
   const [all, setAll] = React.useState(getAllProducts());
 
-  React.useEffect(() => {
-    const onUpdate = () => setAll(getAllProducts());
-    window.addEventListener('products:updated', onUpdate);
-    return () => window.removeEventListener('products:updated', onUpdate);
-  }, []);
+  useWindowEvent(APP_EVENTS.productsUpdated, () => setAll(getAllProducts()));
 
   const onFile = async (e) => {
     const file = e.target.files?.[0];
@@ -67,7 +44,7 @@ export default function CustomizeHomePage() {
   const toggleWidget = (k) => setCfg((c) => ({ ...c, widgets: { ...c.widgets, [k]: !c.widgets[k] } }));
 
   const save = () => {
-    saveConfig(cfg);
+    saveHomeConfig(cfg);
     setSaved(true);
     setTimeout(() => setSaved(false), 1200);
   };
@@ -182,7 +159,7 @@ export default function CustomizeHomePage() {
       <Divider sx={{ my: 2 }} />
       <Stack direction="row" spacing={2}>
         <Button variant="contained" onClick={save}>Save</Button>
-        <Button variant="outlined" onClick={() => setCfg(defaultConfig)}>Reset</Button>
+        <Button variant="outlined" onClick={() => setCfg(defaultHomeConfig)}>Reset</Button>
       </Stack>
       {saved && <Alert severity="success" sx={{ mt: 2 }}>Saved! Check your homepage.</Alert>}
     </Box>

@@ -19,6 +19,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { useUI } from '../../state/UIContext';
+import { isStrongPassword, isValidEmail, PASSWORD_RULES } from 'core/utils/validation';
 
 export default function AuthDialog() {
   const { authOpen, setAuthOpen } = useUI();
@@ -41,16 +42,10 @@ export default function AuthDialog() {
     return () => clearTimeout(t);
   }, [otpStep.active, otpStep.seconds]);
 
-  const validEmail = (e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
-  const passwordRules = [
-    { label: 'At least 8 characters', test: (p) => p.length >= 8 },
-    { label: 'One uppercase letter', test: (p) => /[A-Z]/.test(p) },
-    { label: 'One lowercase letter', test: (p) => /[a-z]/.test(p) },
-    { label: 'One number', test: (p) => /\d/.test(p) },
-    { label: 'One special character', test: (p) => /[^A-Za-z0-9]/.test(p) },
-  ];
+  const validEmail = isValidEmail;
+  const passwordRules = PASSWORD_RULES;
 
-  const allPasswordRulesOk = (p) => passwordRules.every((r) => r.test(p));
+  const allPasswordRulesOk = isStrongPassword;
 
   const doLogin = async () => {
     setError('');

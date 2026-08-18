@@ -12,14 +12,13 @@ import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 import { getAllOrders } from 'services/ordersStore';
+import { formatPrice } from 'core/utils/price';
+import { APP_EVENTS } from 'core/utils/appEvents';
+import { useWindowEvent } from 'hooks/useWindowEvent';
 
 export default function OrdersPage() {
   const [rows, setRows] = React.useState(getAllOrders());
-  React.useEffect(() => {
-    const onUpd = () => setRows(getAllOrders());
-    window.addEventListener('orders:updated', onUpd);
-    return () => window.removeEventListener('orders:updated', onUpd);
-  }, []);
+  useWindowEvent(APP_EVENTS.ordersUpdated, () => setRows(getAllOrders()));
 
   return (
     <Box sx={{ py: 3 }}>
@@ -45,7 +44,7 @@ export default function OrdersPage() {
                   <TableCell>{new Date(o.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell>{o.items.reduce((n, i) => n + i.qty, 0)}</TableCell>
                   <TableCell>{o.status}</TableCell>
-                  <TableCell align="right">${o.totals?.total?.toFixed?.(2) ?? '-'}</TableCell>
+                  <TableCell align="right">{formatPrice(o.totals?.total)}</TableCell>
                 </TableRow>
               ))}
               {rows.length === 0 && (

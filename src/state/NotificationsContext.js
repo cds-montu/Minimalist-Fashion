@@ -1,14 +1,17 @@
 import React from 'react';
+import { readArray, writeJSON } from 'core/utils/storage';
+import { APP_EVENTS } from 'core/utils/appEvents';
+import { useWindowEvent } from 'hooks/useWindowEvent';
 
 export const NotificationsContext = React.createContext();
 
 const STORAGE_KEY = 'notifications:list';
 
 function load() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+  return readArray(STORAGE_KEY);
 }
 function save(list) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch {}
+  writeJSON(STORAGE_KEY, list);
 }
 
 export function NotificationsProvider({ children }) {
@@ -41,11 +44,7 @@ export function NotificationsProvider({ children }) {
   const unread = items.filter((n) => !n.read).length;
 
   // Simple demo realtime: listen for custom events and add notification
-  React.useEffect(() => {
-    const handler = (e) => add(e.detail);
-    window.addEventListener('notify', handler);
-    return () => window.removeEventListener('notify', handler);
-  }, [add]);
+  useWindowEvent(APP_EVENTS.notify, (e) => add(e.detail));
 
   const value = { items, add, unread, markAllRead, remove };
   return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>;

@@ -26,6 +26,9 @@ import { useCart } from 'state/CartContext';
 import { fetchProducts, fetchFacets } from 'services/productsApi';
 import FilterSidebar from 'components/filters/FilterSidebar';
 import { getProductImage, onImgErrorSwap } from 'core/utils/imageForProduct';
+import { formatPrice } from 'core/utils/price';
+import { APP_EVENTS } from 'core/utils/appEvents';
+import { useWindowEvent } from 'hooks/useWindowEvent';
 
 function ProductCard({ product, onAdd, onQuick }) {
   return (
@@ -65,7 +68,7 @@ function ProductCard({ product, onAdd, onQuick }) {
       </Box>
       <CardContent sx={{ flexGrow: 1 }}>
         <Typography gutterBottom variant="subtitle1">{product.title}</Typography>
-        <Typography variant="body2" color="text.secondary">${product.price.toFixed(2)}</Typography>
+        <Typography variant="body2" color="text.secondary">{formatPrice(product.price)}</Typography>
       </CardContent>
       <CardActions>
         <Button component={Link} to={`/product/${product.id}`} size="small">View</Button>
@@ -167,11 +170,7 @@ function ProductsPage() {
     return () => { ignore = true; };
   }, [q, JSON.stringify(filters), sort, page, dataVersion]);
 
-  React.useEffect(() => {
-    const onUpdate = () => setDataVersion((v) => v + 1);
-    window.addEventListener('products:updated', onUpdate);
-    return () => window.removeEventListener('products:updated', onUpdate);
-  }, []);
+  useWindowEvent(APP_EVENTS.productsUpdated, () => setDataVersion((v) => v + 1));
 
   React.useEffect(() => {
     fetchFacets().then((f) => setAvailable({ categories: f.categories, brands: f.brands }));
@@ -249,7 +248,7 @@ function ProductsPage() {
           />
           <Stack spacing={1}>
             <Rating value={quick?.rating || 4} precision={0.5} readOnly />
-            <Typography variant="h6">${quick?.price?.toFixed(2)}</Typography>
+            <Typography variant="h6">{formatPrice(quick?.price)}</Typography>
             <Typography color="text.secondary">{quick?.description}</Typography>
           </Stack>
         </DialogContent>

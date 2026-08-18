@@ -37,17 +37,16 @@ import { getAllProducts } from 'services/productsStore';
 import { useCart } from 'state/CartContext';
 import { useWishlist } from 'state/WishlistContext';
 import { getGalleryImages, getProductImage, onImgErrorSwap } from 'core/utils/imageForProduct';
+import { formatPrice } from 'core/utils/price';
+import { APP_EVENTS } from 'core/utils/appEvents';
+import { useWindowEvent } from 'hooks/useWindowEvent';
 
 function ProductDetailPage() {
   const { id } = useParams();
   const { addItem } = useCart();
   const { toggle: toggleWish, contains: wishContains } = useWishlist();
   const [all, setAll] = React.useState(getAllProducts());
-  React.useEffect(() => {
-    const onUpdate = () => setAll(getAllProducts());
-    window.addEventListener('products:updated', onUpdate);
-    return () => window.removeEventListener('products:updated', onUpdate);
-  }, []);
+  useWindowEvent(APP_EVENTS.productsUpdated, () => setAll(getAllProducts()));
   const routeId = String(id);
   const product = React.useMemo(() => all.find((p) => String(p.id) === routeId), [all, routeId]);
   const [images, setImages] = React.useState(() => getGalleryImages(product, 5, { w: 800, h: 600 }));
@@ -154,7 +153,7 @@ function ProductDetailPage() {
       <Grid item xs={12} md={6}>
         <Typography variant="h5" gutterBottom>{product.title}</Typography>
         <Rating value={product.rating} precision={0.5} readOnly sx={{ mb: 1 }} />
-        <Typography variant="h6" sx={{ mb: 2 }}>${product.price.toFixed(2)}</Typography>
+        <Typography variant="h6" sx={{ mb: 2 }}>{formatPrice(product.price)}</Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>{product.description}</Typography>
         <Stack spacing={2} sx={{ mb: 3 }}>
           <Box>
@@ -267,7 +266,7 @@ function ProductDetailPage() {
                   />
                   <CardContent sx={{ py: 1, px: 1 }}>
                     <Typography variant="subtitle2" noWrap sx={{ fontSize: '0.9rem' }}>{rp.title}</Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>${rp.price.toFixed(2)}</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>{formatPrice(rp.price)}</Typography>
                   </CardContent>
                 </CardActionArea>
                 <CardActions sx={{ pt: 0, px: 1, pb: 1 }}>

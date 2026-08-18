@@ -1,6 +1,9 @@
 import React from 'react';
 import { createTheme, ThemeProvider, useMediaQuery, CssBaseline, GlobalStyles } from '@mui/material';
 import { responsiveFontSizes, alpha } from '@mui/material/styles';
+import { readRaw, writeRaw } from 'core/utils/storage';
+
+const COLOR_MODE_KEY = 'color-mode';
 
 const ColorModeContext = React.createContext({ toggleColorMode: () => {}, mode: 'light' });
 
@@ -10,7 +13,7 @@ export function useColorMode() {
 
 export function AppThemeProvider({ children }) {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [mode, setMode] = React.useState(() => localStorage.getItem('color-mode') || (prefersDarkMode ? 'dark' : 'light'));
+  const [mode, setMode] = React.useState(() => readRaw(COLOR_MODE_KEY) || (prefersDarkMode ? 'dark' : 'light'));
 
   const colorMode = React.useMemo(
     () => ({
@@ -18,7 +21,7 @@ export function AppThemeProvider({ children }) {
       toggleColorMode: () => {
         setMode((prev) => {
           const next = prev === 'light' ? 'dark' : 'light';
-          localStorage.setItem('color-mode', next);
+          writeRaw(COLOR_MODE_KEY, next);
           return next;
         });
       },

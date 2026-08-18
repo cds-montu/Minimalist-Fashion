@@ -22,6 +22,8 @@ import { useCart } from 'state/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { createOrder } from 'services/ordersStore';
 import { useAuth } from 'state/AuthContext';
+import { formatLineTotal, formatPrice } from 'core/utils/price';
+import { isValidEmail, isValidPhone } from 'core/utils/validation';
 
 const steps = ['Address', 'Delivery', 'Payment', 'Review'];
 
@@ -59,14 +61,22 @@ function CheckoutPage() {
   const shippingCost = delivery === 'express' ? 14.99 : delivery === 'next' ? 24.99 : 0;
   const total = subtotal + shippingCost;
 
+  const totalsRows = (
+    <>
+      <Stack direction="row" justifyContent="space-between"><Typography>Subtotal</Typography><Typography>{formatPrice(subtotal)}</Typography></Stack>
+      <Stack direction="row" justifyContent="space-between"><Typography>Shipping</Typography><Typography>{shippingCost ? formatPrice(shippingCost) : 'Free'}</Typography></Stack>
+      <Stack direction="row" justifyContent="space-between"><Typography variant="h6">Total</Typography><Typography variant="h6">{formatPrice(total)}</Typography></Stack>
+    </>
+  );
+
   const validateStep = () => {
     setError('');
     if (activeStep === 0) {
       const required = ['firstName', 'lastName', 'email', 'phone', 'line1', 'city', 'state', 'zip'];
       const missing = required.filter((k) => !String(address[k]).trim());
       if (missing.length) { setError('Please fill all required address fields.'); return false; }
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(address.email)) { setError('Please enter a valid email.'); return false; }
-      if (!/^[0-9\-\+\s]{7,}$/.test(address.phone)) { setError('Please enter a valid phone number.'); return false; }
+      if (!isValidEmail(address.email)) { setError('Please enter a valid email.'); return false; }
+      if (!isValidPhone(address.phone)) { setError('Please enter a valid phone number.'); return false; }
     }
     if (activeStep === 1) {
       if (!delivery) { setError('Please select a delivery method.'); return false; }
@@ -92,9 +102,9 @@ function CheckoutPage() {
         const { wallet } = payment;
         if (!String(wallet).trim()) { setError('Please select a digital wallet.'); return false; }
       } else if (paymentMethod === 'paypal') {
-        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(payment.paypalEmail)) { setError('Enter your PayPal email.'); return false; }
+        if (!isValidEmail(payment.paypalEmail)) { setError('Enter your PayPal email.'); return false; }
       } else if (paymentMethod === 'stripe') {
-        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(payment.stripeEmail)) { setError('Enter your Stripe account email.'); return false; }
+        if (!isValidEmail(payment.stripeEmail)) { setError('Enter your Stripe account email.'); return false; }
       }
     }
     return true;
@@ -241,7 +251,7 @@ function CheckoutPage() {
         {items.map((i) => (
           <Stack key={i.key} direction="row" justifyContent="space-between">
             <Typography variant="body2">{i.product.title} × {i.qty}</Typography>
-            <Typography variant="body2">${(i.product.price * i.qty).toFixed(2)}</Typography>
+            <Typography variant="body2">{formatLineTotal(i.product.price, i.qty)}</Typography>
           </Stack>
         ))}
       </Stack>
@@ -253,9 +263,7 @@ function CheckoutPage() {
         {paymentMethod === 'netbanking' && `Net Banking • ${payment.bank || '—'}`}
         {paymentMethod === 'wallet' && `Wallet • ${payment.wallet || '—'}`}
       </Typography>
-      <Stack direction="row" justifyContent="space-between"><Typography>Subtotal</Typography><Typography>${subtotal.toFixed(2)}</Typography></Stack>
-      <Stack direction="row" justifyContent="space-between"><Typography>Shipping</Typography><Typography>{shippingCost ? `$${shippingCost.toFixed(2)}` : 'Free'}</Typography></Stack>
-      <Stack direction="row" justifyContent="space-between"><Typography variant="h6">Total</Typography><Typography variant="h6">${total.toFixed(2)}</Typography></Stack>
+      {totalsRows}
       <Divider />
       <Typography variant="subtitle2">Ship to</Typography>
       <Typography variant="body2">{address.firstName} {address.lastName}, {address.line1}{address.line2 ? `, ${address.line2}` : ''}, {address.city}, {address.state} {address.zip}</Typography>
@@ -304,15 +312,13 @@ function CheckoutPage() {
               {items.slice(0, 4).map((i) => (
                 <Stack key={i.key} direction="row" justifyContent="space-between">
                   <Typography variant="body2" noWrap>{i.product.title} × {i.qty}</Typography>
-                  <Typography variant="body2">${(i.product.price * i.qty).toFixed(2)}</Typography>
+                  <Typography variant="body2">{formatLineTotal(i.product.price, i.qty)}</Typography>
                 </Stack>
               ))}
               {items.length > 4 && <Typography variant="caption" color="text.secondary">+ {items.length - 4} more items</Typography>}
             </Stack>
             <Divider sx={{ my: 1 }} />
-            <Stack direction="row" justifyContent="space-between"><Typography>Subtotal</Typography><Typography>${subtotal.toFixed(2)}</Typography></Stack>
-            <Stack direction="row" justifyContent="space-between"><Typography>Shipping</Typography><Typography>{shippingCost ? `$${shippingCost.toFixed(2)}` : 'Free'}</Typography></Stack>
-            <Stack direction="row" justifyContent="space-between"><Typography variant="h6">Total</Typography><Typography variant="h6">${total.toFixed(2)}</Typography></Stack>
+            {totalsRows}
           </Paper>
         </Grid>
       </Grid>

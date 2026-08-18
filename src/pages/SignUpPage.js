@@ -15,6 +15,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from 'state/AuthContext';
+import { writeJSON, writeRaw } from 'core/utils/storage';
+import { isStrongPassword, isValidEmail, PASSWORD_RULES } from 'core/utils/validation';
 
 export default function SignUpPage() {
   const navigate = useNavigate();
@@ -24,15 +26,9 @@ export default function SignUpPage() {
   const [error, setError] = React.useState('');
   const [form, setForm] = React.useState({ name: '', email: '', password: '' });
 
-  const validEmail = (e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
-  const rules = [
-    { label: 'At least 8 characters', test: (p) => p.length >= 8 },
-    { label: 'One uppercase letter', test: (p) => /[A-Z]/.test(p) },
-    { label: 'One lowercase letter', test: (p) => /[a-z]/.test(p) },
-    { label: 'One number', test: (p) => /\d/.test(p) },
-    { label: 'One special character', test: (p) => /[^A-Za-z0-9]/.test(p) },
-  ];
-  const ok = (p) => rules.every((r) => r.test(p));
+  const validEmail = isValidEmail;
+  const rules = PASSWORD_RULES;
+  const ok = isStrongPassword;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -43,9 +39,9 @@ export default function SignUpPage() {
     try {
       setLoading(true);
       const creds = { email: form.email, password: form.password };
-      localStorage.setItem('auth:creds', JSON.stringify(creds));
+      writeJSON('auth:creds', creds);
       // Optionally also persist display name
-      localStorage.setItem('auth:displayName', form.name);
+      writeRaw('auth:displayName', form.name);
       // Auto-login then go home
       await login({ email: form.email, name: form.name });
       navigate('/');

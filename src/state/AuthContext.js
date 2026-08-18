@@ -1,55 +1,43 @@
 import React from 'react';
 import { googleLogout } from '@react-oauth/google';
+import { readArray, readJSON, readRaw, removeKeys, writeJSON, writeRaw } from 'core/utils/storage';
+import { isStrongPassword, isValidEmail, PASSWORD_REQUIREMENTS_MESSAGE } from 'core/utils/validation';
 
 export const AuthContext = React.createContext();
 
+const USER_KEY = 'user';
+const SESSION_USER_KEY = 'auth:user';
+const SESSION_TOKEN_KEY = 'auth:token';
+const ACCOUNTS_KEY = 'auth:accounts';
+
 // Helper function to get stored user
-export const getStoredUser = () => {
-  try {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-  } catch (error) {
-    console.error('Error parsing stored user:', error);
-    return null;
-  }
-};
+export const getStoredUser = () => readJSON(USER_KEY, null);
+
+const createToken = (userId) =>
+  `jwt.${btoa(`${userId}:${Date.now()}`)}.${Math.random().toString(36).slice(2)}`;
 
 export function AuthProvider({ children }) {
   const [user, setUser] = React.useState(getStoredUser);
-  const [token, setToken] = React.useState(() => {
-    try {
-      return (
-        localStorage.getItem('auth:token') || sessionStorage.getItem('auth:token') || null
-      );
-    } catch { return null; }
-  });
+  const [token, setToken] = React.useState(
+    () => readRaw(SESSION_TOKEN_KEY) || readRaw(SESSION_TOKEN_KEY, { session: true }) || null
+  );
 
   const saveSession = (u, t, remember) => {
     setUser(u);
     setToken(t);
-    try {
-      const payload = JSON.stringify(u);
-      const store = remember ? localStorage : sessionStorage;
-      const other = remember ? sessionStorage : localStorage;
-      store.setItem('auth:user', payload);
-      store.setItem('auth:token', t);
-      other.removeItem('auth:user');
-      other.removeItem('auth:token');
-    } catch {}
+    const target = { session: !remember };
+    writeJSON(SESSION_USER_KEY, u, target);
+    writeRaw(SESSION_TOKEN_KEY, t, target);
+    removeKeys([SESSION_USER_KEY, SESSION_TOKEN_KEY], { session: remember });
   };
 
   // Local account storage for demo (replace with API in prod)
-  const readAccounts = () => {
-    try { return JSON.parse(localStorage.getItem('auth:accounts') || '[]'); } catch { return []; }
-  };
-  const writeAccounts = (arr) => { try { localStorage.setItem('auth:accounts', JSON.stringify(arr || [])); } catch {} };
-
-  const strongPassword = (pwd) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/.test(pwd);
-  const validEmail = (e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
+  const readAccounts = () => readArray(ACCOUNTS_KEY);
+  const writeAccounts = (arr) => writeJSON(ACCOUNTS_KEY, arr || []);
 
   const signup = async ({ name, email, password, avatar }) => {
-    if (!validEmail(email)) throw new Error('Invalid email format');
-    if (!strongPassword(password)) throw new Error('Password must be 8+ chars incl. upper, lower, number, symbol');
+    if (!isValidEmail(email)) throw new Error('Invalid email format');
+    if (!isStrongPassword(password)) throw new Error(PASSWORD_REQUIREMENTS_MESSAGE);
     const accounts = readAccounts();
     if (accounts.some((a) => a.email.toLowerCase() === email.toLowerCase())) {
       throw new Error('An account with this email already exists');
@@ -57,8 +45,7 @@ export function AuthProvider({ children }) {
     const u = { id: `u_${Date.now()}`, name: name || email.split('@')[0], email, avatar: avatar || null };
     const record = { ...u, password };
     writeAccounts([record, ...accounts]);
-    const t = `jwt.${btoa(`${u.id}:${Date.now()}`)}.${Math.random().toString(36).slice(2)}`;
-    saveSession(u, t, true);
+    saveSession(u, createToken(u.id), true);
     return u;
   };
 
@@ -67,8 +54,7 @@ export function AuthProvider({ children }) {
     const acc = accounts.find((a) => a.email.toLowerCase() === String(email).toLowerCase());
     if (!acc || acc.password !== password) throw new Error('Invalid email or password');
     const u = { id: acc.id, name: acc.name, email: acc.email, avatar: acc.avatar || null };
-    const t = `jwt.${btoa(`${u.id}:${Date.now()}`)}.${Math.random().toString(36).slice(2)}`;
-    saveSession(u, t, remember);
+    saveSession(u, createToken(u.id), remember);
     return u;
   };
 
@@ -77,8 +63,7 @@ export function AuthProvider({ children }) {
     const id = `oauth_${provider}_${Date.now()}`;
     const email = `${provider}_user@example.com`;
     const u = { id, email, name: provider === 'google' ? 'Google User' : 'Apple User', avatar: null, provider };
-    const t = `jwt.${btoa(`${u.id}:${Date.now()}`)}.${Math.random().toString(36).slice(2)}`;
-    saveSession(u, t, true);
+    saveSession(u, createToken(u.id), true);
     return u;
   };
 
@@ -107,7 +92,7 @@ export function AuthProvider({ children }) {
       };
       
       // Save user data to localStorage
-      localStorage.setItem('user', JSON.stringify(user));
+      writeJSON(USER_KEY, user);
       
       setUser(user);
       return user;
@@ -125,26 +110,16 @@ export function AuthProvider({ children }) {
     
     // Clear all auth data
     setUser(null);
-    try {
-      localStorage.removeItem('user');
-      localStorage.removeItem('auth:user');
-      sessionStorage.removeItem('auth:user');
-      localStorage.removeItem('auth:token');
-      sessionStorage.removeItem('auth:token');
-    } catch (error) {
-      console.error('Error during logout:', error);
-    }
+    removeKeys([USER_KEY, SESSION_USER_KEY, SESSION_TOKEN_KEY]);
+    removeKeys([SESSION_USER_KEY, SESSION_TOKEN_KEY], { session: true });
   };
 
   const updateUser = (patch) => {
     setUser((prev) => {
       if (!prev) return prev;
       const next = { ...prev, ...patch };
-      try {
-        const pay = JSON.stringify(next);
-        if (localStorage.getItem('auth:user')) localStorage.setItem('auth:user', pay);
-        if (sessionStorage.getItem('auth:user')) sessionStorage.setItem('auth:user', pay);
-      } catch {}
+      if (readRaw(SESSION_USER_KEY)) writeJSON(SESSION_USER_KEY, next);
+      if (readRaw(SESSION_USER_KEY, { session: true })) writeJSON(SESSION_USER_KEY, next, { session: true });
       return next;
     });
   };

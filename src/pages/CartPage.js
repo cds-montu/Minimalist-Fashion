@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import { useCart } from '../state/CartContext';
+import { formatPrice } from 'core/utils/price';
 import { useNavigate } from 'react-router-dom';
 
 function CartPage() {
@@ -23,7 +24,7 @@ function CartPage() {
               <Box sx={{ width: 72, height: 72, bgcolor: 'action.hover', borderRadius: 1 }} />
               <Box sx={{ flex: 1 }}>
                 <Typography variant="subtitle1">{i.product.title}</Typography>
-                <Typography variant="body2" color="text.secondary">${i.product.price.toFixed(2)} x {i.qty}</Typography>
+                <Typography variant="body2" color="text.secondary">{formatPrice(i.product.price)} x {i.qty}</Typography>
               </Box>
               <Button onClick={() => updateQty(i.key, Math.max(1, i.qty - 1))}>-</Button>
               <Typography>{i.qty}</Typography>
@@ -33,7 +34,7 @@ function CartPage() {
           ))}
           <Divider sx={{ my: 2 }} />
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6">Subtotal: ${subtotal.toFixed(2)}</Typography>
+            <Typography variant="h6">Subtotal: {formatPrice(subtotal)}</Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button onClick={clear}>Clear</Button>
               <Button variant="contained" onClick={() => navigate('/checkout')}>Checkout</Button>

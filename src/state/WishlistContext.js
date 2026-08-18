@@ -1,19 +1,15 @@
 import React from 'react';
+import { readArray, writeJSON } from 'core/utils/storage';
 
 export const WishlistContext = React.createContext();
 
+const STORAGE_KEY = 'wishlist:items';
+
 export function WishlistProvider({ children }) {
-  const [items, setItems] = React.useState(() => {
-    try {
-      const raw = localStorage.getItem('wishlist:items');
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [items, setItems] = React.useState(() => readArray(STORAGE_KEY));
 
   React.useEffect(() => {
-    try { localStorage.setItem('wishlist:items', JSON.stringify(items)); } catch {}
+    writeJSON(STORAGE_KEY, items);
   }, [items]);
 
   const toggle = (product) => {

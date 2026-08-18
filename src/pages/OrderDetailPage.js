@@ -18,6 +18,9 @@ import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import { getOrderById, updateOrderStatus, requestRMA } from 'services/ordersStore';
+import { formatPrice as currency } from 'core/utils/price';
+import { APP_EVENTS } from 'core/utils/appEvents';
+import { useWindowEvent } from 'hooks/useWindowEvent';
 
 const STEPS = ['Pending', 'Packed', 'Shipped', 'Delivered'];
 
@@ -31,11 +34,7 @@ export default function OrderDetailPage() {
 
   const refresh = React.useCallback(() => setOrder(getOrderById(id)), [id]);
 
-  React.useEffect(() => {
-    const onUpd = () => refresh();
-    window.addEventListener('orders:updated', onUpd);
-    return () => window.removeEventListener('orders:updated', onUpd);
-  }, [refresh]);
+  useWindowEvent(APP_EVENTS.ordersUpdated, refresh);
 
   if (!order) {
     return (
@@ -47,7 +46,6 @@ export default function OrderDetailPage() {
   }
 
   const stepIndex = Math.max(0, STEPS.indexOf(order.status));
-  const currency = (n) => (n != null ? `$${Number(n).toFixed(2)}` : '-');
 
   const printInvoice = () => {
     // Open print dialog for the invoice section
