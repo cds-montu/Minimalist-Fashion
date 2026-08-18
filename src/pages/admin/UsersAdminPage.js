@@ -77,7 +77,10 @@ export default function UsersAdminPage() {
     if (!current.id && (!current.password || current.password.length < 6)) nextErrors.password = 'Password must be at least 6 characters';
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
-    upsertUser(current);
+    // The password is only used to create the account server-side; never store
+    // it in the browser alongside the user record.
+    const { password: _password, ...userRecord } = current;
+    upsertUser(userRecord);
     setEditOpen(false);
     setPage(1);
     load();

@@ -6,13 +6,29 @@ export const AuthContext = React.createContext();
 // Helper function to get stored user
 export const getStoredUser = () => {
   try {
-    const user = localStorage.getItem('user');
+    const user = localStorage.getItem('auth:user') || sessionStorage.getItem('auth:user');
     return user ? JSON.parse(user) : null;
   } catch (error) {
     console.error('Error parsing stored user:', error);
     return null;
   }
 };
+
+const toHex = (bytes) => Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+
+const randomHex = (byteLength = 16) => toHex(window.crypto.getRandomValues(new Uint8Array(byteLength)));
+
+// Demo-only credential hashing: a browser store can never be a real credential
+// store. Production sign-in must call a server that hashes with bcrypt/argon2.
+async function hashPassword(password, salt) {
+  const digest = await window.crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(`${salt}:${password}`)
+  );
+  return toHex(new Uint8Array(digest));
+}
+
+const createSessionToken = (userId) => `demo.${btoa(`${userId}:${Date.now()}`)}.${randomHex(24)}`;
 
 export function AuthProvider({ children }) {
   const [user, setUser] = React.useState(getStoredUser);
@@ -54,21 +70,41 @@ export function AuthProvider({ children }) {
     if (accounts.some((a) => a.email.toLowerCase() === email.toLowerCase())) {
       throw new Error('An account with this email already exists');
     }
-    const u = { id: `u_${Date.now()}`, name: name || email.split('@')[0], email, avatar: avatar || null };
-    const record = { ...u, password };
+    const u = { id: `u_${randomHex(8)}`, name: name || email.split('@')[0], email, avatar: avatar || null };
+    const salt = randomHex();
+    const record = { ...u, salt, passwordHash: await hashPassword(password, salt) };
     writeAccounts([record, ...accounts]);
-    const t = `jwt.${btoa(`${u.id}:${Date.now()}`)}.${Math.random().toString(36).slice(2)}`;
-    saveSession(u, t, true);
+    saveSession(u, createSessionToken(u.id), true);
     return u;
   };
 
   const login = async ({ email, password, remember = true }) => {
     const accounts = readAccounts();
-    const acc = accounts.find((a) => a.email.toLowerCase() === String(email).toLowerCase());
-    if (!acc || acc.password !== password) throw new Error('Invalid email or password');
+    const acc = accounts.find((a) => a.email?.toLowerCase() === String(email).toLowerCase());
+    if (!acc) throw new Error('Invalid email or password');
+
+    let valid = false;
+    if (acc.salt && acc.passwordHash) {
+      valid = (await hashPassword(password, acc.salt)) === acc.passwordHash;
+    } else if (acc.password !== undefined) {
+      // Migrate accounts persisted in plaintext by earlier versions.
+      valid = acc.password === password;
+      if (valid) {
+        const salt = randomHex();
+        const passwordHash = await hashPassword(password, salt);
+        writeAccounts(
+          accounts.map((a) => {
+            if (a !== acc) return a;
+            const { password: _plaintext, ...rest } = a;
+            return { ...rest, salt, passwordHash };
+          })
+        );
+      }
+    }
+    if (!valid) throw new Error('Invalid email or password');
+
     const u = { id: acc.id, name: acc.name, email: acc.email, avatar: acc.avatar || null };
-    const t = `jwt.${btoa(`${u.id}:${Date.now()}`)}.${Math.random().toString(36).slice(2)}`;
-    saveSession(u, t, remember);
+    saveSession(u, createSessionToken(u.id), remember);
     return u;
   };
 
@@ -77,8 +113,7 @@ export function AuthProvider({ children }) {
     const id = `oauth_${provider}_${Date.now()}`;
     const email = `${provider}_user@example.com`;
     const u = { id, email, name: provider === 'google' ? 'Google User' : 'Apple User', avatar: null, provider };
-    const t = `jwt.${btoa(`${u.id}:${Date.now()}`)}.${Math.random().toString(36).slice(2)}`;
-    saveSession(u, t, true);
+    saveSession(u, createSessionToken(u.id), true);
     return u;
   };
 
@@ -97,19 +132,17 @@ export function AuthProvider({ children }) {
       }
       
       const userData = await res.json();
+      // The provider access token is deliberately not persisted: it stays in
+      // memory for the lifetime of the page only.
       const user = {
         id: userData.sub,
         name: userData.name,
         email: userData.email,
         avatar: userData.picture,
         provider,
-        accessToken: tokenResponse.access_token
       };
-      
-      // Save user data to localStorage
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      setUser(user);
+
+      saveSession(user, createSessionToken(user.id), true);
       return user;
     } catch (error) {
       console.error('OAuth login error:', error);
@@ -125,8 +158,8 @@ export function AuthProvider({ children }) {
     
     // Clear all auth data
     setUser(null);
+    setToken(null);
     try {
-      localStorage.removeItem('user');
       localStorage.removeItem('auth:user');
       sessionStorage.removeItem('auth:user');
       localStorage.removeItem('auth:token');
@@ -149,7 +182,9 @@ export function AuthProvider({ children }) {
     });
   };
 
-  const value = { user, token, login, signup, socialLogin, oauthLogin, logout, updateUser };
+  const isAuthenticated = React.useCallback(() => !!user, [user]);
+
+  const value = { user, token, loading: false, isAuthenticated, login, signup, socialLogin, oauthLogin, logout, updateUser };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
