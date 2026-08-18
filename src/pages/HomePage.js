@@ -16,29 +16,18 @@ import Lifestyle from "../assests/images/Lifestyle Section.jpg";
 import { getProductImage, onImgErrorSwap } from 'core/utils/imageForProduct';
 import BrandLogo from 'components/BrandLogo';
 import LookbookSlider from 'components/lookbook/LookbookSlider';
-
-const STORAGE_KEY = 'home:config';
-
-function loadConfig() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
-}
+import { loadHomeConfig } from 'core/config/homeConfig';
+import { APP_EVENTS } from 'core/utils/appEvents';
+import { useWindowEvent } from 'hooks/useWindowEvent';
+import { formatPrice } from 'core/utils/price';
 
 function HomePage() {
   const theme = useTheme();
-  const [cfg, setCfg] = React.useState(loadConfig());
+  const [cfg, setCfg] = React.useState(loadHomeConfig());
   const [all, setAll] = React.useState(getAllProducts());
 
-  React.useEffect(() => {
-    const onUpdate = () => setAll(getAllProducts());
-    window.addEventListener('products:updated', onUpdate);
-    return () => window.removeEventListener('products:updated', onUpdate);
-  }, []);
-
-  React.useEffect(() => {
-    const onStorage = () => setCfg(loadConfig());
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
+  useWindowEvent(APP_EVENTS.productsUpdated, () => setAll(getAllProducts()));
+  useWindowEvent(APP_EVENTS.storage, () => setCfg(loadHomeConfig()));
 
   const primarySx = cfg.themeMode === 'custom' ? { bgcolor: cfg.customPrimaryColor, '&:hover': { filter: 'brightness(0.9)' } } : undefined;
 
@@ -75,7 +64,7 @@ function HomePage() {
             <Typography variant="subtitle1" sx={{ mt: 1, fontWeight: 600 }} noWrap>
               {p.title}
             </Typography>
-            <Typography variant="body2" color="text.secondary">${p.price}</Typography>
+            <Typography variant="body2" color="text.secondary">{formatPrice(p.price)}</Typography>
             <Box sx={{ mt: 1.5 }}>
               <Button size="small" component={Link} to={`/product/${p.id}`} variant="text">
                 View

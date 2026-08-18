@@ -1,19 +1,18 @@
 // Local orders store with status tracking and basic returns/refunds flow
 // In production, replace with real API calls.
 
+import { readArray, writeJSON } from 'core/utils/storage';
+import { APP_EVENTS, emitAppEvent } from 'core/utils/appEvents';
+
 const ORDERS_KEY = 'orders:list';
 
 function readOrders() {
-  try { const raw = localStorage.getItem(ORDERS_KEY); const arr = raw ? JSON.parse(raw) : []; return Array.isArray(arr) ? arr : []; } catch { return []; }
+  return readArray(ORDERS_KEY);
 }
 
 function writeOrders(list) {
-  try {
-    localStorage.setItem(ORDERS_KEY, JSON.stringify(list || []));
-    if (typeof window !== 'undefined' && window.dispatchEvent) {
-      window.dispatchEvent(new CustomEvent('orders:updated'));
-    }
-  } catch {}
+  writeJSON(ORDERS_KEY, list || []);
+  emitAppEvent(APP_EVENTS.ordersUpdated);
 }
 
 export function getAllOrders() {

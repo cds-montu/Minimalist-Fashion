@@ -32,6 +32,8 @@ import Checkbox from '@mui/material/Checkbox';
 // import FormHelperText from '@mui/material/FormHelperText';
 import { upsertUser, removeUser, queryUsers, toggleUserStatus } from 'services/usersStore';
 import { bulkRemoveUsers, setUsersStatus } from 'services/usersStore';
+import { APP_EVENTS } from 'core/utils/appEvents';
+import { useWindowEvent } from 'hooks/useWindowEvent';
 
 export default function UsersAdminPage() {
   const [q, setQ] = React.useState('');
@@ -56,11 +58,7 @@ export default function UsersAdminPage() {
   }, [q, role, status, page, pageSize]);
 
   React.useEffect(() => { load(); }, [load]);
-  React.useEffect(() => {
-    const onUpdated = () => load();
-    window.addEventListener('users:updated', onUpdated);
-    return () => window.removeEventListener('users:updated', onUpdated);
-  }, [load]);
+  useWindowEvent(APP_EVENTS.usersUpdated, load);
 
   const openAdd = () => { setCurrent({ id: '', name: '', email: '', role: 'user', status: 'active', avatar: '', password: '' }); setEditOpen(true); };
   const openEdit = (u) => { setCurrent({ ...u, password: '' }); setEditOpen(true); };

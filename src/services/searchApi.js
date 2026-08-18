@@ -1,31 +1,20 @@
 import { getAllTitles as getDynamicTitles } from 'services/productsStore';
 import { delay } from 'core/utils/delay';
 import { httpGet } from 'services/http/client';
+import { readArray, writeJSON } from 'core/utils/storage';
 
 const RECENT_KEY = 'recent-searches';
 
 function getAllTitles() { return getDynamicTitles(); }
 
 export function getRecentSearches(limit = 6) {
-  try {
-    const raw = localStorage.getItem(RECENT_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr.slice(0, limit) : [];
-  } catch {
-    return [];
-  }
+  return readArray(RECENT_KEY).slice(0, limit);
 }
 
 export function saveRecentSearch(q) {
   if (!q) return;
-  try {
-    const arr = getRecentSearches(20);
-    const existing = arr.filter((x) => x.toLowerCase() !== q.toLowerCase());
-    const updated = [q, ...existing].slice(0, 20);
-    localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
-  } catch {
-    // ignore
-  }
+  const existing = getRecentSearches(20).filter((x) => String(x).toLowerCase() !== q.toLowerCase());
+  writeJSON(RECENT_KEY, [q, ...existing].slice(0, 20));
 }
 
 export async function fetchSearchSuggestions(q, limit = 8) {

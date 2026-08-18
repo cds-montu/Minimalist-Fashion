@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { useWishlist } from '../state/WishlistContext';
 import { useCart } from '../state/CartContext';
+import { formatPrice } from 'core/utils/price';
 
 function WishlistPage() {
   const { items, toggle } = useWishlist();
@@ -20,7 +21,7 @@ function WishlistPage() {
           <Card>
             <CardContent>
               <Typography variant="subtitle1">{p.title}</Typography>
-              <Typography variant="body2" color="text.secondary">${p.price.toFixed(2)}</Typography>
+              <Typography variant="body2" color="text.secondary">{formatPrice(p.price)}</Typography>
             </CardContent>
             <CardActions>
               <Button onClick={() => addItem(p, 1)} variant="contained" size="small">Add to Cart</Button>

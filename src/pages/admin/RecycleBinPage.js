@@ -16,6 +16,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Alert from '@mui/material/Alert';
 import { getRecycleBinItems, restoreProduct, emptyRecycleBin } from 'services/productsStore';
+import { APP_EVENTS } from 'core/utils/appEvents';
+import { useWindowEvent } from 'hooks/useWindowEvent';
 
 export default function RecycleBinPage() {
   const [rows, setRows] = React.useState([]);
@@ -26,11 +28,7 @@ export default function RecycleBinPage() {
   }, []);
 
   React.useEffect(() => { load(); }, [load]);
-  React.useEffect(() => {
-    const onUpdated = () => load();
-    window.addEventListener('products:updated', onUpdated);
-    return () => window.removeEventListener('products:updated', onUpdated);
-  }, [load]);
+  useWindowEvent(APP_EVENTS.productsUpdated, load);
 
   const doRestore = async (id) => {
     restoreProduct(id);

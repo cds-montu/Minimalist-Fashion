@@ -10,6 +10,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
+import { formatPrice } from 'core/utils/price';
 
 const seed = Array.from({ length: 12 }).map((_, i) => ({
   id: 1000 + i,
@@ -49,7 +50,7 @@ export default function OrdersAdminPage() {
                 <TableCell>{r.id}</TableCell>
                 <TableCell>{r.customer}</TableCell>
                 <TableCell>{r.date}</TableCell>
-                <TableCell align="right">${r.total.toFixed(2)}</TableCell>
+                <TableCell align="right">{formatPrice(r.total)}</TableCell>
                 <TableCell>
                   <Chip label={r.status} size="small" color={r.status === 'Delivered' ? 'success' : r.status === 'Shipped' ? 'info' : r.status === 'Paid' ? 'primary' : 'default'} />
                 </TableCell>

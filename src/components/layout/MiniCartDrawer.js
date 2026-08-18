@@ -11,6 +11,7 @@ import Alert from '@mui/material/Alert';
 import { useCart } from '../../state/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { useUI } from '../../state/UIContext';
+import { formatLineTotal, formatPrice } from 'core/utils/price';
 
 export default function MiniCartDrawer() {
   const [lastRemoved, setLastRemoved] = React.useState(null);
@@ -42,7 +43,7 @@ export default function MiniCartDrawer() {
                   <Typography variant="body2" color="text.secondary">Qty: {item.qty}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
-                  <Typography variant="subtitle2">${(item.product.price * item.qty).toFixed(2)}</Typography>
+                  <Typography variant="subtitle2">{formatLineTotal(item.product.price, item.qty)}</Typography>
                   <Button size="small" color="error" onClick={() => onRemove(item.key, item)}>Remove</Button>
                 </Box>
               </Box>
@@ -51,7 +52,7 @@ export default function MiniCartDrawer() {
           <Divider sx={{ my: 2 }} />
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
             <Typography variant="subtitle1">Subtotal</Typography>
-            <Typography variant="subtitle1">${subtotal.toFixed(2)}</Typography>
+            <Typography variant="subtitle1">{formatPrice(subtotal)}</Typography>
           </Box>
           <Button fullWidth variant="outlined" onClick={() => { setMiniCartOpen(false); navigate('/checkout'); }}>Checkout</Button>
         </Box>
