@@ -1,6 +1,7 @@
 import React from 'react';
 import { createTheme, ThemeProvider, useMediaQuery, CssBaseline, GlobalStyles } from '@mui/material';
 import { responsiveFontSizes, alpha } from '@mui/material/styles';
+import { getStorage, logWarning } from 'core/utils/storage';
 
 const ColorModeContext = React.createContext({ toggleColorMode: () => {}, mode: 'light' });
 
@@ -10,7 +11,14 @@ export function useColorMode() {
 
 export function AppThemeProvider({ children }) {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [mode, setMode] = React.useState(() => localStorage.getItem('color-mode') || (prefersDarkMode ? 'dark' : 'light'));
+  const [mode, setMode] = React.useState(() => {
+    try {
+      return getStorage('local')?.getItem('color-mode') || (prefersDarkMode ? 'dark' : 'light');
+    } catch (error) {
+      logWarning('theme:readColorMode', error);
+      return prefersDarkMode ? 'dark' : 'light';
+    }
+  });
 
   const colorMode = React.useMemo(
     () => ({
@@ -18,7 +26,11 @@ export function AppThemeProvider({ children }) {
       toggleColorMode: () => {
         setMode((prev) => {
           const next = prev === 'light' ? 'dark' : 'light';
-          localStorage.setItem('color-mode', next);
+          try {
+            getStorage('local')?.setItem('color-mode', next);
+          } catch (error) {
+            logWarning('theme:writeColorMode', error);
+          }
           return next;
         });
       },

@@ -13,6 +13,7 @@ import Grid from '@mui/material/Grid';
 import Alert from '@mui/material/Alert';
 import { getAllProducts } from 'services/productsStore';
 import { getProductImage, onImgErrorSwap } from 'core/utils/imageForProduct';
+import { errorMessage, readJSON, writeJSON } from 'core/utils/storage';
 
 const STORAGE_KEY = 'home:config';
 
@@ -29,17 +30,29 @@ const defaultConfig = {
 };
 
 function loadConfig() {
-  try { return { ...defaultConfig, ...(JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}) }; } catch { return defaultConfig; }
+  return { ...defaultConfig, ...readJSON(STORAGE_KEY, {}) };
 }
 
 function saveConfig(cfg) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); } catch {}
+  writeJSON(STORAGE_KEY, cfg);
 }
 
 export default function CustomizeHomePage() {
   const [cfg, setCfg] = React.useState(loadConfig());
   const [saved, setSaved] = React.useState(false);
+  const [error, setError] = React.useState('');
   const [all, setAll] = React.useState(getAllProducts());
+
+  const readImage = (file, apply) => {
+    const reader = new FileReader();
+    reader.onload = () => apply(reader.result);
+    reader.onerror = () => setError('Could not read the selected image file.');
+    try {
+      reader.readAsDataURL(file);
+    } catch (err) {
+      setError(errorMessage(err, 'Could not read the selected image file.'));
+    }
+  };
 
   React.useEffect(() => {
     const onUpdate = () => setAll(getAllProducts());
@@ -47,27 +60,33 @@ export default function CustomizeHomePage() {
     return () => window.removeEventListener('products:updated', onUpdate);
   }, []);
 
-  const onFile = async (e) => {
+  const onFile = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setCfg((c) => ({ ...c, banner: { ...c.banner, image: reader.result } }));
-    reader.readAsDataURL(file);
+    readImage(file, (image) => setCfg((c) => ({ ...c, banner: { ...c.banner, image } })));
   };
 
-  const onHeroFile = async (e) => {
-    const file = e.target.files?.[0]; if (!file) return;
-    const reader = new FileReader(); reader.onload = () => setCfg((c) => ({ ...c, heroImage: reader.result })); reader.readAsDataURL(file);
+  const onHeroFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    readImage(file, (heroImage) => setCfg((c) => ({ ...c, heroImage })));
   };
-  const onCollectionFile = async (e) => {
-    const file = e.target.files?.[0]; if (!file) return;
-    const reader = new FileReader(); reader.onload = () => setCfg((c) => ({ ...c, collectionImage: reader.result })); reader.readAsDataURL(file);
+  const onCollectionFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    readImage(file, (collectionImage) => setCfg((c) => ({ ...c, collectionImage })));
   };
 
   const toggleWidget = (k) => setCfg((c) => ({ ...c, widgets: { ...c.widgets, [k]: !c.widgets[k] } }));
 
   const save = () => {
-    saveConfig(cfg);
+    try {
+      saveConfig(cfg);
+    } catch (err) {
+      setError(errorMessage(err, 'Could not save your homepage settings.'));
+      return;
+    }
+    setError('');
     setSaved(true);
     setTimeout(() => setSaved(false), 1200);
   };
@@ -184,6 +203,7 @@ export default function CustomizeHomePage() {
         <Button variant="contained" onClick={save}>Save</Button>
         <Button variant="outlined" onClick={() => setCfg(defaultConfig)}>Reset</Button>
       </Stack>
+      {error && <Alert severity="error" sx={{ mt: 2 }} onClose={() => setError('')}>{error}</Alert>}
       {saved && <Alert severity="success" sx={{ mt: 2 }}>Saved! Check your homepage.</Alert>}
     </Box>
   );

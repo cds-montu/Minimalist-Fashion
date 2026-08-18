@@ -3,6 +3,8 @@
  * Handles token management, error handling, and response parsing
  */
 
+import { logError, logWarning } from 'core/utils/storage';
+
 // Base URL for API requests (can be configured via environment variables)
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '/api';
 
@@ -59,7 +61,10 @@ export const apiRequest = async (endpoint, options = {}) => {
 
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, requestOptions);
-    const data = await response.json().catch(() => ({}));
+    const data = await response.json().catch((parseError) => {
+      logWarning(`api:parse:${endpoint}`, parseError);
+      return {};
+    });
 
     // Handle non-2xx responses
     if (!response.ok) {
@@ -71,7 +76,7 @@ export const apiRequest = async (endpoint, options = {}) => {
 
     return data;
   } catch (error) {
-    console.error('API request failed:', error);
+    logError(`api:request:${endpoint}`, error);
     
     // Handle specific error cases
     if (error.status === 401) {

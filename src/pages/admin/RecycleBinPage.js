@@ -16,10 +16,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Alert from '@mui/material/Alert';
 import { getRecycleBinItems, restoreProduct, emptyRecycleBin } from 'services/productsStore';
+import { errorMessage } from 'core/utils/storage';
 
 export default function RecycleBinPage() {
   const [rows, setRows] = React.useState([]);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [error, setError] = React.useState('');
 
   const load = React.useCallback(() => {
     setRows(getRecycleBinItems());
@@ -32,13 +34,23 @@ export default function RecycleBinPage() {
     return () => window.removeEventListener('products:updated', onUpdated);
   }, [load]);
 
-  const doRestore = async (id) => {
-    restoreProduct(id);
+  const doRestore = (id) => {
+    try {
+      restoreProduct(id);
+      setError('');
+    } catch (err) {
+      setError(errorMessage(err, 'Could not restore the product.'));
+    }
     load();
   };
 
   const doEmpty = () => {
-    emptyRecycleBin();
+    try {
+      emptyRecycleBin();
+      setError('');
+    } catch (err) {
+      setError(errorMessage(err, 'Could not empty the recycle bin.'));
+    }
     setConfirmOpen(false);
     load();
   };
@@ -51,6 +63,8 @@ export default function RecycleBinPage() {
           <Button variant="outlined" color="error" onClick={() => setConfirmOpen(true)} disabled={!rows.some((r) => !r._tombstone)}>Empty Trash</Button>
         </Stack>
       </Stack>
+
+      {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
 
       <Alert severity="info" sx={{ mb: 2 }}>Items you delete can be restored here. Base catalog items appear as tombstones and can be restored by removing the tombstone.</Alert>
 

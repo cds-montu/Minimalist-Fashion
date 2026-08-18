@@ -6,6 +6,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { errorMessage, getStorage } from 'core/utils/storage';
 
 const REQUIRED_ADMIN_ID = 'ADMIN-2025-SECURE';
 
@@ -18,12 +19,19 @@ export default function AdminLoginPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (value.trim() === REQUIRED_ADMIN_ID) {
-      localStorage.setItem('adminId', REQUIRED_ADMIN_ID);
-      navigate(from, { replace: true });
-    } else {
+    if (value.trim() !== REQUIRED_ADMIN_ID) {
       setError('Invalid Admin ID');
+      return;
     }
+    try {
+      const storage = getStorage('local');
+      if (!storage) throw new Error('Browser storage is unavailable');
+      storage.setItem('adminId', REQUIRED_ADMIN_ID);
+    } catch (err) {
+      setError(errorMessage(err, 'Could not start your admin session.'));
+      return;
+    }
+    navigate(from, { replace: true });
   };
 
   return (

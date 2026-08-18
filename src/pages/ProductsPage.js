@@ -6,6 +6,7 @@ import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';
 import Skeleton from '@mui/material/Skeleton';
 import Pagination from '@mui/material/Pagination';
 import Box from '@mui/material/Box';
@@ -26,6 +27,7 @@ import { useCart } from 'state/CartContext';
 import { fetchProducts, fetchFacets } from 'services/productsApi';
 import FilterSidebar from 'components/filters/FilterSidebar';
 import { getProductImage, onImgErrorSwap } from 'core/utils/imageForProduct';
+import { errorMessage, logError } from 'core/utils/storage';
 
 function ProductCard({ product, onAdd, onQuick }) {
   return (
@@ -79,6 +81,7 @@ function ProductsPage() {
   const { addItem } = useCart();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = React.useState(true);
+  const [loadError, setLoadError] = React.useState('');
   const [page, setPage] = React.useState(1);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [sort, setSort] = React.useState('relevance');
@@ -158,12 +161,23 @@ function ProductsPage() {
   React.useEffect(() => {
     let ignore = false;
     setLoading(true);
-    fetchProducts({ q, filters, sort, page, pageSize }).then((res) => {
-      if (ignore) return;
-      setItems(res.items);
-      setTotalPages(res.totalPages);
-      setLoading(false);
-    });
+    fetchProducts({ q, filters, sort, page, pageSize })
+      .then((res) => {
+        if (ignore) return;
+        setItems(res.items);
+        setTotalPages(res.totalPages);
+        setLoadError('');
+      })
+      .catch((err) => {
+        if (ignore) return;
+        logError('ProductsPage:fetchProducts', err);
+        setItems([]);
+        setTotalPages(1);
+        setLoadError(errorMessage(err, 'We could not load products. Please try again.'));
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
     return () => { ignore = true; };
   }, [q, JSON.stringify(filters), sort, page, dataVersion]);
 
@@ -174,7 +188,9 @@ function ProductsPage() {
   }, []);
 
   React.useEffect(() => {
-    fetchFacets().then((f) => setAvailable({ categories: f.categories, brands: f.brands }));
+    fetchFacets()
+      .then((f) => setAvailable({ categories: f.categories, brands: f.brands }))
+      .catch((err) => logError('ProductsPage:fetchFacets', err));
   }, []);
 
   // Keep filters in sync with category from URL query (e.g., /products?category=Fashion)
@@ -204,7 +220,16 @@ function ProductsPage() {
           </Select>
         </FormControl>
       </Stack>
-      {!loading && items.length === 0 ? (
+      {loadError && (
+        <Alert
+          severity="error"
+          sx={{ mb: 2 }}
+          action={<Button color="inherit" size="small" onClick={() => setDataVersion((v) => v + 1)}>Retry</Button>}
+        >
+          {loadError}
+        </Alert>
+      )}
+      {!loading && !loadError && items.length === 0 ? (
         <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
           <Typography variant="h6" sx={{ mb: 1 }}>No products found</Typography>
           <Typography variant="body2" sx={{ mb: 2 }}>Try clearing filters or browsing all products.</Typography>

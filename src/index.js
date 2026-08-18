@@ -12,12 +12,13 @@ import { NotificationsProvider } from './state/NotificationsContext';
 import brandLogo from 'assests/images/BrandLogo.png';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ENV } from 'core/config/env';
+import { logWarning } from 'core/utils/storage';
 
 // Start MSW in development to mock API endpoints
 if (process.env.NODE_ENV === 'development') {
   // eslint-disable-next-line global-require
   const { worker } = require('./mocks/browser');
-  worker.start();
+  worker.start().catch((error) => logWarning('msw:start', error));
 }
 
 const container = document.getElementById('root');
@@ -34,7 +35,9 @@ try {
     setIcon('icon', brandLogo);
     setIcon('apple-touch-icon', brandLogo);
   }
-} catch {}
+} catch (error) {
+  logWarning('index:favicon', error);
+}
 
 root.render(
   <React.StrictMode>

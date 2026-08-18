@@ -1,67 +1,45 @@
 // Centralized products store backed by localStorage, with static defaults
 import baseProducts, { facets as staticFacets } from 'shared/data/products';
+import { readJSON, writeJSON } from 'core/utils/storage';
 
 const LS_KEY = 'products:custom';
 const LS_DELETED_KEY = 'products:deleted'; // tombstones for base products (ids)
 const LS_TRASH_KEY = 'products:trash'; // full objects for deleted custom products
 
-function readCustom() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr : [];
-  } catch {
-    return [];
+function dispatchUpdated() {
+  if (typeof window !== 'undefined' && window.dispatchEvent) {
+    window.dispatchEvent(new CustomEvent('products:updated'));
   }
+}
+
+function readCustom() {
+  const arr = readJSON(LS_KEY, []);
+  return Array.isArray(arr) ? arr : [];
 }
 
 function readTrash() {
-  try {
-    const raw = localStorage.getItem(LS_TRASH_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr : [];
-  } catch { return []; }
+  const arr = readJSON(LS_TRASH_KEY, []);
+  return Array.isArray(arr) ? arr : [];
 }
 
 function writeTrash(list) {
-  try {
-    localStorage.setItem(LS_TRASH_KEY, JSON.stringify(list || []));
-    if (typeof window !== 'undefined' && window.dispatchEvent) {
-      window.dispatchEvent(new CustomEvent('products:updated'));
-    }
-  } catch {}
+  writeJSON(LS_TRASH_KEY, list || []);
+  dispatchUpdated();
 }
 
 function writeCustom(list) {
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify(list || []));
-    if (typeof window !== 'undefined' && window.dispatchEvent) {
-      window.dispatchEvent(new CustomEvent('products:updated'));
-    }
-  } catch {
-    // ignore write errors
-  }
+  writeJSON(LS_KEY, list || []);
+  dispatchUpdated();
 }
 
 function readDeleted() {
-  try {
-    const raw = localStorage.getItem(LS_DELETED_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr.map(String) : [];
-  } catch {
-    return [];
-  }
+  const arr = readJSON(LS_DELETED_KEY, []);
+  return Array.isArray(arr) ? arr.map(String) : [];
 }
 
 function writeDeleted(ids) {
-  try {
-    localStorage.setItem(LS_DELETED_KEY, JSON.stringify(ids || []));
-    if (typeof window !== 'undefined' && window.dispatchEvent) {
-      window.dispatchEvent(new CustomEvent('products:updated'));
-    }
-  } catch {
-    // ignore write errors
-  }
+  writeJSON(LS_DELETED_KEY, ids || []);
+  dispatchUpdated();
 }
 
 export function getAllProducts() {
@@ -106,9 +84,7 @@ export function removeProduct(id) {
       writeDeleted(deleted);
     } else {
       // still dispatch so UI refreshes
-      if (typeof window !== 'undefined' && window.dispatchEvent) {
-        window.dispatchEvent(new CustomEvent('products:updated'));
-      }
+      dispatchUpdated();
     }
   }
 }

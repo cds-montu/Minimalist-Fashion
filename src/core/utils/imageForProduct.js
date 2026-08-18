@@ -2,6 +2,8 @@
 // We use loremflickr with a seed for stability per product and category/topic keywords for relevance.
 // Example output: https://loremflickr.com/seed/12-0/600/600/electronics,laptop,tech
 
+import { logWarning } from 'core/utils/storage';
+
 function norm(str = '') {
   return String(str).toLowerCase();
 }
@@ -111,7 +113,7 @@ export function onImgErrorSwap(e, product, { w = 600, h = 600, index = 0 } = {})
     const next = urls[pos + 1];
     el.dataset.fallbackIdx = String(pos + 1);
     el.src = next;
-  } catch {
-    // swallow
+  } catch (error) {
+    logWarning('imageForProduct:onImgErrorSwap', error);
   }
 }

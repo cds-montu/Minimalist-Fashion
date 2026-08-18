@@ -1,4 +1,5 @@
 import { ENV } from 'core/config/env';
+import { logWarning } from 'core/utils/storage';
 
 function buildUrl(path, params) {
   const base = ENV.API_BASE_URL?.replace(/\/$/, '') || '';
@@ -16,7 +17,12 @@ function buildUrl(path, params) {
 async function handleResponse(res) {
   const contentType = res.headers.get('content-type') || '';
   const isJson = contentType.includes('application/json');
-  const body = isJson ? await res.json().catch(() => ({})) : await res.text();
+  const body = isJson
+    ? await res.json().catch((error) => {
+        logWarning(`http:parse:${res.url}`, error);
+        return {};
+      })
+    : await res.text();
   if (!res.ok) {
     const err = new Error(body?.message || res.statusText || 'Request failed');
     err.status = res.status;

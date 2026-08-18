@@ -37,6 +37,7 @@ import { getAllProducts } from 'services/productsStore';
 import { useCart } from 'state/CartContext';
 import { useWishlist } from 'state/WishlistContext';
 import { getGalleryImages, getProductImage, onImgErrorSwap } from 'core/utils/imageForProduct';
+import { logWarning } from 'core/utils/storage';
 
 function ProductDetailPage() {
   const { id } = useParams();
@@ -63,7 +64,11 @@ function ProductDetailPage() {
     // Clear images first to avoid mixed galleries while switching ids
     setImages([]);
     setImages(getGalleryImages(product, 5, { w: 800, h: 600 }));
-    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch {}
+    try {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      logWarning('ProductDetailPage:scrollTo', error);
+    }
   }, [routeId, product?.id]);
   const specs = React.useMemo(() => ([
     { label: 'Brand', value: product?.brand || '-' },

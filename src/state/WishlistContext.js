@@ -1,19 +1,20 @@
 import React from 'react';
+import { logWarning, readJSON, writeJSON } from 'core/utils/storage';
 
 export const WishlistContext = React.createContext();
 
 export function WishlistProvider({ children }) {
   const [items, setItems] = React.useState(() => {
-    try {
-      const raw = localStorage.getItem('wishlist:items');
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
+    const stored = readJSON('wishlist:items', []);
+    return Array.isArray(stored) ? stored : [];
   });
 
   React.useEffect(() => {
-    try { localStorage.setItem('wishlist:items', JSON.stringify(items)); } catch {}
+    try {
+      writeJSON('wishlist:items', items);
+    } catch (error) {
+      logWarning('WishlistContext:persist', error);
+    }
   }, [items]);
 
   const toggle = (product) => {
@@ -30,5 +31,7 @@ export function WishlistProvider({ children }) {
 }
 
 export function useWishlist() {
-  return React.useContext(WishlistContext);
+  const context = React.useContext(WishlistContext);
+  if (!context) throw new Error('useWishlist must be used within a WishlistProvider');
+  return context;
 }

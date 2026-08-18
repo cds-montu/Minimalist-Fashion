@@ -16,11 +16,12 @@ import Lifestyle from "../assests/images/Lifestyle Section.jpg";
 import { getProductImage, onImgErrorSwap } from 'core/utils/imageForProduct';
 import BrandLogo from 'components/BrandLogo';
 import LookbookSlider from 'components/lookbook/LookbookSlider';
+import { readJSON } from 'core/utils/storage';
 
 const STORAGE_KEY = 'home:config';
 
 function loadConfig() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
+  return readJSON(STORAGE_KEY, {});
 }
 
 function HomePage() {

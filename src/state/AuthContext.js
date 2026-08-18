@@ -1,48 +1,48 @@
 import React from 'react';
 import { googleLogout } from '@react-oauth/google';
+import { getStorage, logError, logWarning, readJSON, writeJSON } from 'core/utils/storage';
 
 export const AuthContext = React.createContext();
 
 // Helper function to get stored user
-export const getStoredUser = () => {
-  try {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-  } catch (error) {
-    console.error('Error parsing stored user:', error);
-    return null;
-  }
-};
+export const getStoredUser = () => readJSON('user', null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = React.useState(getStoredUser);
   const [token, setToken] = React.useState(() => {
+    const local = getStorage('local');
+    const session = getStorage('session');
     try {
-      return (
-        localStorage.getItem('auth:token') || sessionStorage.getItem('auth:token') || null
-      );
-    } catch { return null; }
+      return local?.getItem('auth:token') || session?.getItem('auth:token') || null;
+    } catch (error) {
+      logWarning('AuthContext:readToken', error);
+      return null;
+    }
   });
 
   const saveSession = (u, t, remember) => {
     setUser(u);
     setToken(t);
+    const store = getStorage(remember ? 'local' : 'session');
+    const other = getStorage(remember ? 'session' : 'local');
     try {
-      const payload = JSON.stringify(u);
-      const store = remember ? localStorage : sessionStorage;
-      const other = remember ? sessionStorage : localStorage;
-      store.setItem('auth:user', payload);
-      store.setItem('auth:token', t);
-      other.removeItem('auth:user');
-      other.removeItem('auth:token');
-    } catch {}
+      store?.setItem('auth:user', JSON.stringify(u));
+      store?.setItem('auth:token', t);
+      other?.removeItem('auth:user');
+      other?.removeItem('auth:token');
+    } catch (error) {
+      // The session stays valid for this tab; warn that it will not survive a reload.
+      logWarning('AuthContext:saveSession', error);
+    }
   };
 
   // Local account storage for demo (replace with API in prod)
   const readAccounts = () => {
-    try { return JSON.parse(localStorage.getItem('auth:accounts') || '[]'); } catch { return []; }
+    const arr = readJSON('auth:accounts', []);
+    return Array.isArray(arr) ? arr : [];
   };
-  const writeAccounts = (arr) => { try { localStorage.setItem('auth:accounts', JSON.stringify(arr || [])); } catch {} };
+  // Propagates: a signup whose credentials are not stored must not look successful.
+  const writeAccounts = (arr) => writeJSON('auth:accounts', arr || []);
 
   const strongPassword = (pwd) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/.test(pwd);
   const validEmail = (e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
@@ -93,7 +93,9 @@ export function AuthProvider({ children }) {
       });
       
       if (!res.ok) {
-        throw new Error('Failed to fetch user info');
+        const error = new Error(`Failed to fetch user info (${res.status} ${res.statusText})`);
+        error.status = res.status;
+        throw error;
       }
       
       const userData = await res.json();
@@ -107,12 +109,16 @@ export function AuthProvider({ children }) {
       };
       
       // Save user data to localStorage
-      localStorage.setItem('user', JSON.stringify(user));
-      
+      try {
+        writeJSON('user', user);
+      } catch (storageError) {
+        logWarning('AuthContext:oauthLogin:persist', storageError);
+      }
+
       setUser(user);
       return user;
     } catch (error) {
-      console.error('OAuth login error:', error);
+      logError('AuthContext:oauthLogin', error);
       throw error;
     }
   };
@@ -125,14 +131,16 @@ export function AuthProvider({ children }) {
     
     // Clear all auth data
     setUser(null);
+    setToken(null);
     try {
-      localStorage.removeItem('user');
-      localStorage.removeItem('auth:user');
-      sessionStorage.removeItem('auth:user');
-      localStorage.removeItem('auth:token');
-      sessionStorage.removeItem('auth:token');
+      const local = getStorage('local');
+      const session = getStorage('session');
+      ['user', 'auth:user', 'auth:token'].forEach((key) => {
+        local?.removeItem(key);
+        session?.removeItem(key);
+      });
     } catch (error) {
-      console.error('Error during logout:', error);
+      logError('AuthContext:logout', error);
     }
   };
 
@@ -142,9 +150,13 @@ export function AuthProvider({ children }) {
       const next = { ...prev, ...patch };
       try {
         const pay = JSON.stringify(next);
-        if (localStorage.getItem('auth:user')) localStorage.setItem('auth:user', pay);
-        if (sessionStorage.getItem('auth:user')) sessionStorage.setItem('auth:user', pay);
-      } catch {}
+        const local = getStorage('local');
+        const session = getStorage('session');
+        if (local?.getItem('auth:user')) local.setItem('auth:user', pay);
+        if (session?.getItem('auth:user')) session.setItem('auth:user', pay);
+      } catch (error) {
+        logWarning('AuthContext:updateUser', error);
+      }
       return next;
     });
   };
@@ -154,5 +166,7 @@ export function AuthProvider({ children }) {
 }
 
 export function useAuth() {
-  return React.useContext(AuthContext);
+  const context = React.useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
+  return context;
 }

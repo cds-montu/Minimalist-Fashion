@@ -21,6 +21,7 @@ import Alert from '@mui/material/Alert';
 import { useCart } from 'state/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { createOrder } from 'services/ordersStore';
+import { errorMessage } from 'core/utils/storage';
 import { useAuth } from 'state/AuthContext';
 
 const steps = ['Address', 'Delivery', 'Payment', 'Review'];
@@ -119,7 +120,13 @@ function CheckoutPage() {
       stripeEmail: payment.stripeEmail,
     };
     const totals = { subtotal, shipping: shippingCost, total };
-    const order = createOrder({ items, address, delivery, paymentMethod, paymentMeta, totals, user });
+    let order;
+    try {
+      order = createOrder({ items, address, delivery, paymentMethod, paymentMeta, totals, user });
+    } catch (err) {
+      setError(errorMessage(err, 'We could not place your order. Please try again.'));
+      return;
+    }
     clear();
     setActiveStep(steps.length);
     navigate(`/orders/${order.id}`);
